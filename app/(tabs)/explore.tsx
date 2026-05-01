@@ -1,112 +1,241 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { currentUser, places, users } from '@/constants/data';
+import { useState } from 'react';
+import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
-import { Collapsible } from '@/components/ui/collapsible';
-import { ExternalLink } from '@/components/external-link';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Fonts } from '@/constants/theme';
+export default function ExploreScreen() {
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
 
-export default function TabTwoScreen() {
+  const CATEGORIES = ["Do Local", "Fitness", "Food", "Museum", "Shops", "Sights", "Other"];
+
+  const toggleTag = (tag: string) => {
+    if (selectedTags.includes(tag)) {
+      setSelectedTags(selectedTags.filter(t => t !== tag));
+    } else {
+      setSelectedTags([...selectedTags, tag]);
+    }
+  };
+
+  const showAll = selectedTags.length === 0;
+
+  const filteredPlaces = places.filter(place => {
+    const isNotOwnPost = place.userId !== currentUser.id;
+    const matchesCategory = showAll || selectedTags.includes(place.category);
+    const matchesSearch = searchQuery.trim() === "" ||
+      place.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (place.description && place.description.toLowerCase().includes(searchQuery.toLowerCase()));
+
+    return isNotOwnPost && matchesCategory && matchesSearch;
+  });
+
+  const searchedUsers = searchQuery.trim() !== "" 
+    ? users.filter(u => u.handle.toLowerCase().includes(searchQuery.toLowerCase()))
+    : [];
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Explore</Text>
+      </View>
+
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search Perch"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholderTextColor="#999"
         />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText
-          type="title"
-          style={{
-            fontFamily: Fonts.rounded,
-          }}>
-          Explore
-        </ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image
-          source={require('@/assets/images/react-logo.png')}
-          style={{ width: 100, height: 100, alignSelf: 'center' }}
-        />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful{' '}
-          <ThemedText type="defaultSemiBold" style={{ fontFamily: Fonts.mono }}>
-            react-native-reanimated
-          </ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+      </View>
+
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false}
+        style={styles.tagScroll}
+        contentContainerStyle={styles.tagContainer}
+      >
+        {CATEGORIES.map(tag => (
+          <TouchableOpacity
+            key={tag}
+            onPress={() => toggleTag(tag)}
+            style={[
+              styles.tag,
+              selectedTags.includes(tag) && styles.tagActive
+            ]}
+          >
+            <Text style={[
+              styles.tagText,
+              selectedTags.includes(tag) && styles.tagTextActive
+            ]}>
+              {tag}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+
+      {searchedUsers.length > 0 && (
+        <View style={styles.usersSection}>
+          {searchedUsers.map(user => (
+            <View key={user.id} style={styles.userCard}>
+              <Image source={{ uri: user.avatar }} style={styles.userAvatar} />
+              <Text style={styles.userName}>{user.name}</Text>
+              <Text style={styles.userHandle}>{user.handle}</Text>
+            </View>
+          ))}
+        </View>
+      )}
+
+      <View style={styles.placesGrid}>
+        {filteredPlaces.map((place) => (
+          <ExplorePostItem key={place.id} place={place} />
+        ))}
+      </View>
+    </ScrollView>
+  );
+}
+
+function ExplorePostItem({ place }: { place: any }) {
+  return (
+    <View style={styles.postCard}>
+      <Image source={{ uri: place.image }} style={styles.postImage} />
+      <View style={styles.categoryBadge}>
+        <Text style={styles.categoryText}>{place.category}</Text>
+      </View>
+      <View style={styles.postInfo}>
+        <Text style={styles.postName}>{place.name}</Text>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
   },
-  titleContainer: {
-    flexDirection: 'row',
+  header: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#000',
+  },
+  searchContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  searchInput: {
+    backgroundColor: '#f0f0f0',
+    borderRadius: 24,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    fontSize: 14,
+    color: '#000',
+  },
+  tagScroll: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  tagContainer: {
+    paddingHorizontal: 12,
+    paddingVertical: 12,
     gap: 8,
   },
+  tag: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    backgroundColor: '#fff',
+  },
+  tagActive: {
+    backgroundColor: '#000',
+    borderColor: '#000',
+  },
+  tagText: {
+    fontSize: 13,
+    color: '#999',
+  },
+  tagTextActive: {
+    color: '#fff',
+  },
+  usersSection: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 12,
+  },
+  userCard: {
+    width: '48%',
+    backgroundColor: '#f5f5f5',
+    borderRadius: 12,
+    padding: 12,
+    alignItems: 'center',
+  },
+  userAvatar: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    marginBottom: 8,
+  },
+  userName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#000',
+    textAlign: 'center',
+  },
+  userHandle: {
+    fontSize: 12,
+    color: '#666',
+    textAlign: 'center',
+  },
+  placesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 12,
+  },
+  postCard: {
+    width: '48%',
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: '#f0f0f0',
+  },
+  postImage: {
+    width: '100%',
+    aspectRatio: 4 / 5,
+  },
+  categoryBadge: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  categoryText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#666',
+  },
+  postInfo: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  postName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#000',
+  },
 });
+
