@@ -1,5 +1,5 @@
 import { collections, places, users } from '@/constants/data';
-import { Bookmark, Heart, MessageCircle, Share2 } from 'lucide-react-native';
+import { Heart, MessageCircle, Share2, Sparkles } from 'lucide-react-native';
 import { useRef, useState } from 'react';
 import { Animated, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -25,6 +25,7 @@ export default function FeedScreen() {
 
 function PostItem({ item }: { item: any }) {
   const [isLiked, setIsLiked] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
   const [showHeartAnim, setShowHeartAnim] = useState(false);
   const heartScale = useRef(new Animated.Value(0)).current;
 
@@ -41,63 +42,57 @@ function PostItem({ item }: { item: any }) {
   };
 
   return (
-    <View style={styles.postContainer}>
+    <View>
+      {/* Header: User Info */}
       <View style={styles.postHeader}>
         <Image source={{ uri: item.user.avatar }} style={styles.avatar} />
         <View style={styles.userInfo}>
-          <Text style={styles.userName}>{item.user.name}</Text>
-          <Text style={styles.userHandle}>{item.user.handle}</Text>
+          <Text style={styles.userName}>{item.user.handle}</Text>
+          <Text style={styles.collectionInfo}>{item.collection.title}: {item.name}</Text>
         </View>
       </View>
 
+      {/* Image: Full Width Edge-to-Edge */}
       <TouchableOpacity 
-        activeOpacity={0.9}
-        onPress={handleDoubleClick}
+        activeOpacity={0.95} 
+        onPress={handleDoubleClick} 
         style={styles.imageContainer}
       >
         <Image source={{ uri: item.image }} style={styles.postImage} />
         {showHeartAnim && (
-          <Animated.View 
-            style={[
-              styles.heartAnimation,
-              { transform: [{ scale: heartScale }] }
-            ]}
-          >
-            <Text style={styles.heartEmoji}>❤️</Text>
+          <Animated.View style={[styles.heartAnimation, { transform: [{ scale: heartScale }] }]}>
+            <Heart size={80} color="#fff" fill="#fff" />
           </Animated.View>
         )}
       </TouchableOpacity>
 
-      <View style={styles.postContent}>
-        <View style={styles.cardHeader}>
-          <Text style={styles.placeName}>{item.name}</Text>
-          <View style={styles.categoryBadge}>
-            <Text style={styles.categoryText}>{item.category}</Text>
+      {/* Action Bar & Content */}
+      <View style={styles.contentFooter}>
+        <View style={styles.actionsRow}>
+          <TouchableOpacity onPress={() => setIsLiked(!isLiked)}>
+            <Heart size={24} color={isLiked ? '#ef4444' : '#000'} fill={isLiked ? '#ef4444' : 'none'} />
+          </TouchableOpacity>
+          <TouchableOpacity>
+            <MessageCircle size={24} color="#000" />
+          </TouchableOpacity>
+          <TouchableOpacity>
+            <Share2 size={24} color="#000" />
+          </TouchableOpacity>
+          <View style={styles.flexEnd}>
+            <TouchableOpacity onPress={() => setIsSaved(!isSaved)}>
+              <Sparkles size={24} color="#000" fill={isSaved ? '#000' : 'none'} />
+            </TouchableOpacity>
           </View>
         </View>
-        {item.description ? (
-          <Text style={styles.description}>{item.description}</Text>
-        ) : null}
-        <Text style={styles.collectionLabel}>{item.collection.title}</Text>
-      </View>
 
-      <View style={styles.actionsRow}>
-        <TouchableOpacity style={styles.actionButton} onPress={() => setIsLiked(!isLiked)}>
-          <Heart size={20} color={isLiked ? '#ef4444' : '#111827'} />
-          <Text style={[styles.actionLabel, isLiked && styles.likesActive]}>{isLiked ? 'Liked' : 'Like'}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton}>
-          <MessageCircle size={20} color="#111827" />
-          <Text style={styles.actionLabel}>Comment</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton}>
-          <Bookmark size={20} color="#111827" />
-          <Text style={styles.actionLabel}>Save</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton}>
-          <Share2 size={20} color="#111827" />
-          <Text style={styles.actionLabel}>Share</Text>
-        </TouchableOpacity>
+        {item.notes && (
+          <Text style={styles.caption}>
+            <Text style={styles.captionHandle}>{item.user.handle} </Text>
+            <Text style={styles.captionText}>{item.notes}</Text>
+          </Text>
+        )}
+
+        <Text style={styles.timestamp}>{item.timestamp}</Text>
       </View>
     </View>
   );
@@ -106,61 +101,48 @@ function PostItem({ item }: { item: any }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#fff',
   },
   header: {
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
   },
   title: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#111827',
-  },
-  postContainer: {
-    marginHorizontal: 16,
-    marginBottom: 20,
-    borderRadius: 24,
-    backgroundColor: '#fff',
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 4,
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#000',
   },
   postHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 12,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 12,
+    gap: 12,
   },
   avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
   },
   userInfo: {
-    marginLeft: 12,
     flex: 1,
   },
   userName: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 13,
+    fontWeight: '700',
     color: '#000',
   },
-  userHandle: {
-    fontSize: 12,
+  collectionInfo: {
+    fontSize: 11,
     color: '#666',
+    marginTop: 2,
   },
   imageContainer: {
     width: '100%',
-    aspectRatio: 4 / 3,
-    backgroundColor: '#f3f4f6',
+    aspectRatio: 4 / 5,
+    backgroundColor: '#f0f0f0',
+    position: 'relative',
   },
   postImage: {
     width: '100%',
@@ -170,75 +152,38 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: '50%',
     left: '50%',
-    marginTop: -30,
-    marginLeft: -30,
+    marginTop: -40,
+    marginLeft: -40,
   },
-  heartEmoji: {
-    fontSize: 60,
-  },
-  postContent: {
+  contentFooter: {
     paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 12,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  placeName: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#111827',
-    flex: 1,
-    marginRight: 12,
-  },
-  description: {
-    fontSize: 14,
-    color: '#333',
-    marginBottom: 8,
-  },
-  categoryBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    backgroundColor: '#f3f4f6',
-    borderRadius: 999,
-  },
-  categoryText: {
-    fontSize: 12,
-    color: '#4b5563',
-    fontWeight: '700',
-  },
-  collectionLabel: {
-    fontSize: 13,
-    color: '#6b7280',
-    fontWeight: '600',
+    paddingTop: 12,
+    paddingBottom: 16,
   },
   actionsRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-  },
-  actionButton: {
-    flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 999,
-    backgroundColor: '#f8fafc',
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
+    marginBottom: 12,
+    gap: 16,
   },
-  actionLabel: {
-    marginLeft: 8,
+  flexEnd: {
+    marginLeft: 'auto',
+  },
+  caption: {
     fontSize: 13,
-    color: '#111827',
-    fontWeight: '600',
+    color: '#000',
+    lineHeight: 18,
+    marginBottom: 8,
   },
-  likesActive: {
-    color: '#ef4444',
+  captionHandle: {
+    fontWeight: '700',
+  },
+  captionText: {
+    color: '#000',
+  },
+  timestamp: {
+    fontSize: 12,
+    color: '#999',
+    letterSpacing: 0.5,
   },
 });
