@@ -1,36 +1,39 @@
 import { currentUser, places, users } from '@/constants/data';
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function ExploreScreen() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const CATEGORIES = ["Do Local", "Fitness", "Food", "Museum", "Shops", "Sights", "Other"];
+  const categories = ['Do Local', 'Fitness', 'Food', 'Museum', 'Shops', 'Sights', 'Other'];
 
   const toggleTag = (tag: string) => {
     if (selectedTags.includes(tag)) {
-      setSelectedTags(selectedTags.filter(t => t !== tag));
-    } else {
-      setSelectedTags([...selectedTags, tag]);
+      setSelectedTags(selectedTags.filter((value) => value !== tag));
+      return;
     }
+    setSelectedTags([...selectedTags, tag]);
   };
 
   const showAll = selectedTags.length === 0;
 
-  const filteredPlaces = places.filter(place => {
+  const filteredPlaces = places.filter((place) => {
     const isNotOwnPost = place.userId !== currentUser.id;
     const matchesCategory = showAll || selectedTags.includes(place.category);
-    const matchesSearch = searchQuery.trim() === "" ||
+    const matchesSearch =
+      searchQuery.trim() === '' ||
       place.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (place.description && place.description.toLowerCase().includes(searchQuery.toLowerCase()));
+      place.description.toLowerCase().includes(searchQuery.toLowerCase());
 
     return isNotOwnPost && matchesCategory && matchesSearch;
   });
 
-  const searchedUsers = searchQuery.trim() !== "" 
-    ? users.filter(u => u.handle.toLowerCase().includes(searchQuery.toLowerCase()))
-    : [];
+  const searchedUsers =
+    searchQuery.trim() === ''
+      ? []
+      : users.filter((user) => user.handle.toLowerCase().includes(searchQuery.toLowerCase()));
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -48,63 +51,50 @@ export default function ExploreScreen() {
         />
       </View>
 
-      <ScrollView 
-        horizontal 
+      <ScrollView
+        horizontal
         showsHorizontalScrollIndicator={false}
         style={styles.tagScroll}
-        contentContainerStyle={styles.tagContainer}
-      >
-        {CATEGORIES.map(tag => (
+        contentContainerStyle={styles.tagContainer}>
+        {categories.map((tag) => (
           <TouchableOpacity
             key={tag}
             onPress={() => toggleTag(tag)}
-            style={[
-              styles.tag,
-              selectedTags.includes(tag) && styles.tagActive
-            ]}
-          >
-            <Text style={[
-              styles.tagText,
-              selectedTags.includes(tag) && styles.tagTextActive
-            ]}>
-              {tag}
-            </Text>
+            style={[styles.tag, selectedTags.includes(tag) && styles.tagActive]}>
+            <Text style={[styles.tagText, selectedTags.includes(tag) && styles.tagTextActive]}>{tag}</Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
 
       {searchedUsers.length > 0 && (
         <View style={styles.usersSection}>
-          {searchedUsers.map(user => (
-            <View key={user.id} style={styles.userCard}>
+          {searchedUsers.map((user) => (
+            <TouchableOpacity
+              key={user.id}
+              style={styles.userCard}
+              onPress={() => router.push(`/profile/${user.id}`)}>
               <Image source={{ uri: user.avatar }} style={styles.userAvatar} />
               <Text style={styles.userName}>{user.name}</Text>
               <Text style={styles.userHandle}>{user.handle}</Text>
-            </View>
+            </TouchableOpacity>
           ))}
         </View>
       )}
 
       <View style={styles.placesGrid}>
         {filteredPlaces.map((place) => (
-          <ExplorePostItem key={place.id} place={place} />
+          <TouchableOpacity key={place.id} style={styles.postCard} onPress={() => router.push(`/post/${place.id}`)}>
+            <Image source={{ uri: place.image }} style={styles.postImage} />
+            <View style={styles.categoryBadge}>
+              <Text style={styles.categoryText}>{place.category}</Text>
+            </View>
+            <View style={styles.postInfo}>
+              <Text style={styles.postName}>{place.name}</Text>
+            </View>
+          </TouchableOpacity>
         ))}
       </View>
     </ScrollView>
-  );
-}
-
-function ExplorePostItem({ place }: { place: any }) {
-  return (
-    <View style={styles.postCard}>
-      <Image source={{ uri: place.image }} style={styles.postImage} />
-      <View style={styles.categoryBadge}>
-        <Text style={styles.categoryText}>{place.category}</Text>
-      </View>
-      <View style={styles.postInfo}>
-        <Text style={styles.postName}>{place.name}</Text>
-      </View>
-    </View>
   );
 }
 
@@ -238,4 +228,3 @@ const styles = StyleSheet.create({
     color: '#000',
   },
 });
-

@@ -1,14 +1,15 @@
 import { currentUser, inspoBoards, inspoPlaces } from '@/constants/data';
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function InspoScreen() {
-  const [tab, setTab] = useState<"boards" | "posts">("boards");
-  
-  const userInspoBoards = inspoBoards.filter(b => b.userId === currentUser.id && !b.isDefault);
-  const userInspoPosts = inspoPlaces.filter(p => {
-    const board = inspoBoards.find(b => b.id === p.inspoBoardId);
-    return p.userId === currentUser.id && board && !board.isDefault;
+  const [tab, setTab] = useState<'boards' | 'posts'>('boards');
+
+  const userInspoBoards = inspoBoards.filter((board) => board.userId === currentUser.id && !board.isDefault);
+  const userInspoPosts = inspoPlaces.filter((place) => {
+    const board = inspoBoards.find((entry) => entry.id === place.inspoBoardId);
+    return place.userId === currentUser.id && board && !board.isDefault;
   });
 
   return (
@@ -18,45 +19,43 @@ export default function InspoScreen() {
       </View>
 
       <View style={styles.tabContainer}>
-        <TouchableOpacity 
-          style={[styles.tab, tab === "boards" && styles.tabActive]}
-          onPress={() => setTab("boards")}
-        >
-          <Text style={[styles.tabText, tab === "boards" && styles.tabTextActive]}>
-            Boards
-          </Text>
+        <TouchableOpacity style={[styles.tab, tab === 'boards' && styles.tabActive]} onPress={() => setTab('boards')}>
+          <Text style={[styles.tabText, tab === 'boards' && styles.tabTextActive]}>Boards</Text>
         </TouchableOpacity>
-        <TouchableOpacity 
-          style={[styles.tab, tab === "posts" && styles.tabActive]}
-          onPress={() => setTab("posts")}
-        >
-          <Text style={[styles.tabText, tab === "posts" && styles.tabTextActive]}>
-            Posts
-          </Text>
+        <TouchableOpacity style={[styles.tab, tab === 'posts' && styles.tabActive]} onPress={() => setTab('posts')}>
+          <Text style={[styles.tabText, tab === 'posts' && styles.tabTextActive]}>Posts</Text>
         </TouchableOpacity>
       </View>
 
-      {tab === "boards" ? (
+      {tab === 'boards' ? (
         <View style={styles.boardsGrid}>
           {userInspoBoards.map((board) => (
-            <View key={board.id} style={styles.boardCard}>
+            <TouchableOpacity
+              key={board.id}
+              style={styles.boardCard}
+              onPress={() => router.push(`/inspo/${board.id}`)}>
               <Image source={{ uri: board.coverImage }} style={styles.boardImage} />
               <View style={styles.boardOverlay}>
                 <Text style={styles.boardTitle}>{board.title}</Text>
               </View>
-            </View>
+            </TouchableOpacity>
           ))}
         </View>
       ) : (
         <View style={styles.postsGrid}>
-          {userInspoPosts.map((post) => (
-            <View key={post.id} style={styles.postCard}>
-              <Image source={{ uri: post.image }} style={styles.postImage} />
-              <View style={styles.postOverlay}>
-                <Text style={styles.postName}>{post.name}</Text>
-              </View>
-            </View>
-          ))}
+          {userInspoPosts.map((post) => {
+            const board = inspoBoards.find((entry) => entry.id === post.inspoBoardId);
+
+            return (
+              <TouchableOpacity key={post.id} style={styles.postCard} onPress={() => router.push(`/post/${post.id}`)}>
+                <Image source={{ uri: post.image }} style={styles.postImage} />
+                <View style={styles.postOverlay}>
+                  <Text style={styles.postBoard}>{board?.title}</Text>
+                  <Text style={styles.postName}>{post.name}</Text>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
         </View>
       )}
     </ScrollView>
@@ -122,7 +121,10 @@ const styles = StyleSheet.create({
   },
   boardOverlay: {
     position: 'absolute',
-    inset: 0,
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
     justifyContent: 'flex-end',
     padding: 12,
@@ -152,10 +154,17 @@ const styles = StyleSheet.create({
   },
   postOverlay: {
     position: 'absolute',
-    inset: 0,
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
     justifyContent: 'flex-end',
     padding: 8,
+  },
+  postBoard: {
+    fontSize: 10,
+    color: '#d1d5db',
   },
   postName: {
     fontSize: 11,

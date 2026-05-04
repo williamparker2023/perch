@@ -1,18 +1,23 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, FileText, ImagePlus, MapPin } from 'lucide-react-native';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+
+import { collections } from '@/constants/data';
 
 const CATEGORIES = ["Do Local", "Fitness", "Food", "Lodging", "Museum", "Shops", "Sights", "Other"];
 const PRICES = ["Free/NA", "$", "$$", "$$$"];
 
 export default function NewPostScreen() {
+  const { boardId } = useLocalSearchParams<{ boardId?: string }>();
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedPrice, setSelectedPrice] = useState("Free/NA");
   const [rating, setRating] = useState(0);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [notes, setNotes] = useState("");
+  const [link, setLink] = useState("");
+  const board = collections.find((collection) => collection.id === boardId);
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -20,7 +25,9 @@ export default function NewPostScreen() {
         <TouchableOpacity onPress={() => router.back()}>
           <ArrowLeft size={24} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>New Post</Text>
+        <Text style={styles.headerTitle}>
+          {board ? `New Post: ${board.title}` : 'New Post'}
+        </Text>
         <TouchableOpacity style={styles.publishButton}>
           <Text style={styles.publishText}>Post</Text>
         </TouchableOpacity>
@@ -82,6 +89,17 @@ export default function NewPostScreen() {
             value={notes}
             onChangeText={setNotes}
             multiline
+          />
+        </View>
+
+        <View style={styles.formField}>
+          <FileText size={20} color="#999" />
+          <TextInput
+            style={styles.input}
+            placeholder="Add a link (optional)"
+            value={link}
+            onChangeText={setLink}
+            autoCapitalize="none"
           />
         </View>
 

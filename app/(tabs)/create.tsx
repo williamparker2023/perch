@@ -31,7 +31,7 @@ export default function CreateScreen() {
             </TouchableOpacity>
           </Link>
 
-          <Link href="/post/new" asChild>
+          <Link href="/post/select-board" asChild>
             <TouchableOpacity style={styles.createOption}>
               <View style={[styles.iconContainer, styles.postIcon]}>
                 <PlusSquare size={20} color="#111827" />

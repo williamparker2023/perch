@@ -1,14 +1,17 @@
 import { collections, places, users } from '@/constants/data';
+import { router } from 'expo-router';
 import { Heart, MessageCircle, Share2, Sparkles } from 'lucide-react-native';
 import { useRef, useState } from 'react';
 import { Animated, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function FeedScreen() {
-  const feedItems = places.map(p => {
-    const user = users.find(u => u.id === p.userId)!;
-    const collection = collections.find(c => c.id === p.collectionId)!;
-    return { ...p, user, collection };
-  }).reverse();
+  const feedItems = places
+    .map((place) => {
+      const user = users.find((entry) => entry.id === place.userId)!;
+      const collection = collections.find((entry) => entry.id === place.collectionId)!;
+      return { ...place, user, collection };
+    })
+    .reverse();
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -43,21 +46,23 @@ function PostItem({ item }: { item: any }) {
 
   return (
     <View>
-      {/* Header: User Info */}
       <View style={styles.postHeader}>
-        <Image source={{ uri: item.user.avatar }} style={styles.avatar} />
+        <TouchableOpacity onPress={() => router.push(`/profile/${item.user.id}`)}>
+          <Image source={{ uri: item.user.avatar }} style={styles.avatar} />
+        </TouchableOpacity>
         <View style={styles.userInfo}>
-          <Text style={styles.userName}>{item.user.handle}</Text>
-          <Text style={styles.collectionInfo}>{item.collection.title}: {item.name}</Text>
+          <TouchableOpacity onPress={() => router.push(`/profile/${item.user.id}`)}>
+            <Text style={styles.userName}>{item.user.handle}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push(`/collection/${item.collection.id}`)}>
+            <Text style={styles.collectionInfo}>
+              {item.collection.title}: {item.name}
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
 
-      {/* Image: Full Width Edge-to-Edge */}
-      <TouchableOpacity 
-        activeOpacity={0.95} 
-        onPress={handleDoubleClick} 
-        style={styles.imageContainer}
-      >
+      <TouchableOpacity activeOpacity={0.95} onPress={handleDoubleClick} style={styles.imageContainer}>
         <Image source={{ uri: item.image }} style={styles.postImage} />
         {showHeartAnim && (
           <Animated.View style={[styles.heartAnimation, { transform: [{ scale: heartScale }] }]}>
@@ -66,13 +71,12 @@ function PostItem({ item }: { item: any }) {
         )}
       </TouchableOpacity>
 
-      {/* Action Bar & Content */}
       <View style={styles.contentFooter}>
         <View style={styles.actionsRow}>
           <TouchableOpacity onPress={() => setIsLiked(!isLiked)}>
             <Heart size={24} color={isLiked ? '#ef4444' : '#000'} fill={isLiked ? '#ef4444' : 'none'} />
           </TouchableOpacity>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push(`/post/${item.id}`)}>
             <MessageCircle size={24} color="#000" />
           </TouchableOpacity>
           <TouchableOpacity>
