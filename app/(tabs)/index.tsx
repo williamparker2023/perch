@@ -14,7 +14,10 @@ export default function FeedScreen() {
     .reverse();
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      style={styles.container}
+      showsVerticalScrollIndicator={false}
+      stickyHeaderIndices={[0]}>
       <View style={styles.header}>
         <Text style={styles.title}>Perch</Text>
       </View>
@@ -110,6 +113,8 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 16,
     paddingVertical: 12,
+    backgroundColor: '#fff',
+    zIndex: 10,
   },
   title: {
     fontSize: 20,
