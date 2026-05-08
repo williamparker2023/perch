@@ -1,9 +1,25 @@
 import { currentUser, inspoBoards, inspoPlaces } from '@/constants/data';
 import { router } from 'expo-router';
-import { useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useRef, useState } from 'react';
+import { Animated, Image, NativeScrollEvent, NativeSyntheticEvent, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function InspoScreen() {
+  const insets = useSafeAreaInsets();
+  const collapsibleHeaderHeight = 101;
+  const collapsedAmount = useRef(new Animated.Value(0)).current;
+  const lastScrollY = useRef(0);
+  const currentCollapsed = useRef(0);
+  const headerHeight = collapsedAmount.interpolate({
+    inputRange: [0, collapsibleHeaderHeight],
+    outputRange: [insets.top + collapsibleHeaderHeight, insets.top],
+    extrapolate: 'clamp',
+  });
+  const headerTranslateY = collapsedAmount.interpolate({
+    inputRange: [0, collapsibleHeaderHeight],
+    outputRange: [0, -collapsibleHeaderHeight],
+    extrapolate: 'clamp',
+  });
   const [tab, setTab] = useState<'boards' | 'posts'>('boards');
 
   const userInspoBoards = inspoBoards.filter((board) => board.userId === currentUser.id && !board.isDefault);
@@ -12,64 +28,108 @@ export default function InspoScreen() {
     return place.userId === currentUser.id && board && !board.isDefault;
   });
 
+  const handleScroll = ({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const y = nativeEvent.contentOffset.y;
+
+    if (y < 0) {
+      lastScrollY.current = 0;
+      return;
+    }
+
+    const diff = y - lastScrollY.current;
+    lastScrollY.current = y;
+
+    const nextCollapsed = Math.max(0, Math.min(collapsibleHeaderHeight, currentCollapsed.current + diff));
+    currentCollapsed.current = nextCollapsed;
+    collapsedAmount.setValue(nextCollapsed);
+  };
+
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Inspo</Text>
-      </View>
+    <View style={styles.screen}>
+      <Animated.View style={[styles.headerShell, { height: headerHeight, paddingTop: insets.top }]}>
+        <Animated.View style={[styles.headerContent, { transform: [{ translateY: headerTranslateY }] }]}>
+          <View style={styles.header}>
+            <Text style={styles.title}>Inspo</Text>
+          </View>
 
-      <View style={styles.tabContainer}>
-        <TouchableOpacity style={[styles.tab, tab === 'boards' && styles.tabActive]} onPress={() => setTab('boards')}>
-          <Text style={[styles.tabText, tab === 'boards' && styles.tabTextActive]}>Boards</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.tab, tab === 'posts' && styles.tabActive]} onPress={() => setTab('posts')}>
-          <Text style={[styles.tabText, tab === 'posts' && styles.tabTextActive]}>Posts</Text>
-        </TouchableOpacity>
-      </View>
-
-      {tab === 'boards' ? (
-        <View style={styles.boardsGrid}>
-          {userInspoBoards.map((board) => (
-            <TouchableOpacity
-              key={board.id}
-              style={styles.boardCard}
-              onPress={() => router.push(`/inspo/${board.id}`)}>
-              <Image source={{ uri: board.coverImage }} style={styles.boardImage} />
-              <View style={styles.boardOverlay}>
-                <Text style={styles.boardTitle}>{board.title}</Text>
-              </View>
+          <View style={styles.tabContainer}>
+            <TouchableOpacity style={[styles.tab, tab === 'boards' && styles.tabActive]} onPress={() => setTab('boards')}>
+              <Text style={[styles.tabText, tab === 'boards' && styles.tabTextActive]}>Boards</Text>
             </TouchableOpacity>
-          ))}
-        </View>
-      ) : (
-        <View style={styles.postsGrid}>
-          {userInspoPosts.map((post) => {
-            const board = inspoBoards.find((entry) => entry.id === post.inspoBoardId);
+            <TouchableOpacity style={[styles.tab, tab === 'posts' && styles.tabActive]} onPress={() => setTab('posts')}>
+              <Text style={[styles.tabText, tab === 'posts' && styles.tabTextActive]}>Posts</Text>
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
+      </Animated.View>
 
-            return (
-              <TouchableOpacity key={post.id} style={styles.postCard} onPress={() => router.push(`/post/${post.id}`)}>
-                <Image source={{ uri: post.image }} style={styles.postImage} />
-                <View style={styles.postOverlay}>
-                  <Text style={styles.postBoard}>{board?.title}</Text>
-                  <Text style={styles.postName}>{post.name}</Text>
+      <Animated.ScrollView
+        style={styles.container}
+        showsVerticalScrollIndicator={false}
+        scrollEventThrottle={16}
+        onScroll={handleScroll}>
+        <Animated.View style={{ height: headerHeight }} />
+        {tab === 'boards' ? (
+          <View style={styles.boardsGrid}>
+            {userInspoBoards.map((board) => (
+              <TouchableOpacity
+                key={board.id}
+                style={styles.boardCard}
+                onPress={() => router.push(`/inspo/${board.id}`)}>
+                <Image source={{ uri: board.coverImage }} style={styles.boardImage} />
+                <View style={styles.boardOverlay}>
+                  <Text style={styles.boardTitle}>{board.title}</Text>
                 </View>
               </TouchableOpacity>
-            );
-          })}
-        </View>
-      )}
-    </ScrollView>
+            ))}
+          </View>
+        ) : (
+          <View style={styles.postsGrid}>
+            {userInspoPosts.map((post) => {
+              const board = inspoBoards.find((entry) => entry.id === post.inspoBoardId);
+
+              return (
+                <TouchableOpacity key={post.id} style={styles.postCard} onPress={() => router.push(`/post/${post.id}`)}>
+                  <Image source={{ uri: post.image }} style={styles.postImage} />
+                  <View style={styles.postOverlay}>
+                    <Text style={styles.postBoard}>{board?.title}</Text>
+                    <Text style={styles.postName}>{post.name}</Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        )}
+      </Animated.ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
   container: {
     flex: 1,
     backgroundColor: '#fff',
   },
+  headerShell: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#fff',
+    overflow: 'hidden',
+    zIndex: 10,
+  },
+  headerContent: {
+    backgroundColor: '#fff',
+  },
   header: {
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingTop: 12,
+    paddingBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
   },

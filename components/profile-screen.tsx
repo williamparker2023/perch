@@ -3,12 +3,14 @@ import { router } from 'expo-router';
 import { Edit3, Settings } from 'lucide-react-native';
 import { useMemo, useState } from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type ProfileScreenProps = {
   userId?: string;
 };
 
 export function ProfileScreen({ userId }: ProfileScreenProps) {
+  const insets = useSafeAreaInsets();
   const [tab, setTab] = useState<'boards' | 'posts'>('boards');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -35,82 +37,91 @@ export function ProfileScreen({ userId }: ProfileScreenProps) {
   });
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <View style={styles.headerRow}>
-        <Text style={styles.headerTitle}>{profileUser.handle}</Text>
-        {isOwnProfile && (
-          <TouchableOpacity onPress={() => setIsMenuOpen((open) => !open)}>
-            <Settings size={22} color="#000" />
+    <View style={styles.screen}>
+      <ScrollView
+        style={styles.container}
+        showsVerticalScrollIndicator={false}
+        stickyHeaderIndices={[0]}>
+        <View style={[styles.headerShell, { paddingTop: insets.top }]}>
+          <View style={styles.headerRow}>
+            <Text style={styles.headerTitle}>{profileUser.handle}</Text>
+            {isOwnProfile && (
+              <TouchableOpacity onPress={() => setIsMenuOpen((open) => !open)}>
+                <Settings size={22} color="#000" />
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+
+        <View style={styles.bannerContainer}>
+          <Image source={{ uri: profileUser.banner }} style={styles.banner} />
+
+          <View style={styles.avatarWrapper}>
+            <Image source={{ uri: profileUser.avatar }} style={styles.avatar} />
+          </View>
+
+          <View style={styles.statsContainer}>
+            <View style={styles.statItem}>
+              <Text style={styles.statNumber}>{profileUser.followers}</Text>
+              <Text style={styles.statLabel}>flock</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statNumber}>{profileUser.following}</Text>
+              <Text style={styles.statLabel}>following</Text>
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.infoContainer}>
+          <Text style={styles.name}>{profileUser.name}</Text>
+          {!!profileUser.bio && <Text style={styles.bio}>{profileUser.bio}</Text>}
+        </View>
+
+        <View style={styles.tabContainer}>
+          <TouchableOpacity style={styles.tabButton} onPress={() => setTab('boards')}>
+            <Text style={[styles.tabButtonText, tab === 'boards' && styles.tabButtonTextActive]}>Boards</Text>
+            {tab === 'boards' && <View style={styles.tabUnderline} />}
           </TouchableOpacity>
-        )}
-      </View>
-
-      <View style={styles.bannerContainer}>
-        <Image source={{ uri: profileUser.banner }} style={styles.banner} />
-
-        <View style={styles.avatarWrapper}>
-          <Image source={{ uri: profileUser.avatar }} style={styles.avatar} />
+          <TouchableOpacity style={styles.tabButton} onPress={() => setTab('posts')}>
+            <Text style={[styles.tabButtonText, tab === 'posts' && styles.tabButtonTextActive]}>Posts</Text>
+            {tab === 'posts' && <View style={styles.tabUnderline} />}
+          </TouchableOpacity>
         </View>
 
-        <View style={styles.statsContainer}>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{profileUser.followers}</Text>
-            <Text style={styles.statLabel}>flock</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{profileUser.following}</Text>
-            <Text style={styles.statLabel}>following</Text>
-          </View>
-        </View>
-      </View>
-
-      <View style={styles.infoContainer}>
-        <Text style={styles.name}>{profileUser.name}</Text>
-        {!!profileUser.bio && <Text style={styles.bio}>{profileUser.bio}</Text>}
-      </View>
-
-      <View style={styles.tabContainer}>
-        <TouchableOpacity style={styles.tabButton} onPress={() => setTab('boards')}>
-          <Text style={[styles.tabButtonText, tab === 'boards' && styles.tabButtonTextActive]}>Boards</Text>
-          {tab === 'boards' && <View style={styles.tabUnderline} />}
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.tabButton} onPress={() => setTab('posts')}>
-          <Text style={[styles.tabButtonText, tab === 'posts' && styles.tabButtonTextActive]}>Posts</Text>
-          {tab === 'posts' && <View style={styles.tabUnderline} />}
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.contentGrid}>
-        {tab === 'boards'
-          ? userCollections.map((collection) => (
-              <Pressable
-                key={collection.id}
-                onPress={() => router.push(`/collection/${collection.id}`)}
-                style={styles.boardItem}>
-                <Image source={{ uri: collection.coverImage }} style={styles.gridImage} />
-                <View style={styles.gridOverlay}>
-                  <Text style={styles.gridSubtitle}>{collection.isPublic ? 'Public' : 'Private'}</Text>
-                  <Text style={styles.gridTitle}>{collection.title}</Text>
-                </View>
-              </Pressable>
-            ))
-          : userPosts.map((post) => {
-              const board = collections.find((collection) => collection.id === post.collectionId);
-
-              return (
-                <Pressable key={post.id} onPress={() => router.push(`/post/${post.id}`)} style={styles.postItem}>
-                  <Image source={{ uri: post.image }} style={styles.gridImage} />
+        <View style={styles.contentGrid}>
+          {tab === 'boards'
+            ? userCollections.map((collection) => (
+                <Pressable
+                  key={collection.id}
+                  onPress={() => router.push(`/collection/${collection.id}`)}
+                  style={styles.boardItem}>
+                  <Image source={{ uri: collection.coverImage }} style={styles.gridImage} />
                   <View style={styles.gridOverlay}>
-                    <Text style={styles.gridSubtitle}>{board?.title}</Text>
-                    <Text style={styles.gridTitle}>{post.name}</Text>
+                    <Text style={styles.gridSubtitle}>{collection.isPublic ? 'Public' : 'Private'}</Text>
+                    <Text style={styles.gridTitle}>{collection.title}</Text>
                   </View>
                 </Pressable>
-              );
-            })}
-      </View>
+              ))
+            : userPosts.map((post) => {
+                const board = collections.find((collection) => collection.id === post.collectionId);
+
+                return (
+                  <Pressable key={post.id} onPress={() => router.push(`/post/${post.id}`)} style={styles.postItem}>
+                    <Image source={{ uri: post.image }} style={styles.gridImage} />
+                    <View style={styles.gridOverlay}>
+                      <Text style={styles.gridSubtitle}>{board?.title}</Text>
+                      <Text style={styles.gridTitle}>{post.name}</Text>
+                    </View>
+                  </Pressable>
+                );
+              })}
+        </View>
+      </ScrollView>
 
       {isMenuOpen && (
-        <Pressable style={styles.menuOverlay} onPress={() => setIsMenuOpen(false)}>
+        <Pressable
+          style={[styles.menuOverlay, { paddingTop: insets.top + 60 }]}
+          onPress={() => setIsMenuOpen(false)}>
           <View style={styles.menuContainer}>
             <TouchableOpacity
               style={styles.menuItem}
@@ -128,21 +139,31 @@ export function ProfileScreen({ userId }: ProfileScreenProps) {
           </View>
         </Pressable>
       )}
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  headerShell: {
+    backgroundColor: '#fff',
+    zIndex: 10,
   },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingTop: 12,
+    paddingBottom: 12,
+    backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
   },
@@ -297,7 +318,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.25)',
     justifyContent: 'flex-start',
     alignItems: 'flex-end',
-    paddingTop: 60,
     paddingRight: 16,
   },
   menuContainer: {

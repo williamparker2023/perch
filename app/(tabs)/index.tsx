@@ -2,9 +2,25 @@ import { collections, places, users } from '@/constants/data';
 import { router } from 'expo-router';
 import { Heart, MessageCircle, Share2, Sparkles } from 'lucide-react-native';
 import { useRef, useState } from 'react';
-import { Animated, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, Image, NativeScrollEvent, NativeSyntheticEvent, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function FeedScreen() {
+  const insets = useSafeAreaInsets();
+  const titleBarHeight = 52;
+  const collapsedAmount = useRef(new Animated.Value(0)).current;
+  const lastScrollY = useRef(0);
+  const currentCollapsed = useRef(0);
+  const headerHeight = collapsedAmount.interpolate({
+    inputRange: [0, titleBarHeight],
+    outputRange: [insets.top + titleBarHeight, insets.top],
+    extrapolate: 'clamp',
+  });
+  const titleBarTranslateY = collapsedAmount.interpolate({
+    inputRange: [0, titleBarHeight],
+    outputRange: [0, -titleBarHeight],
+    extrapolate: 'clamp',
+  });
   const feedItems = places
     .map((place) => {
       const user = users.find((entry) => entry.id === place.userId)!;
@@ -13,19 +29,41 @@ export default function FeedScreen() {
     })
     .reverse();
 
-  return (
-    <ScrollView
-      style={styles.container}
-      showsVerticalScrollIndicator={false}
-      stickyHeaderIndices={[0]}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Perch</Text>
-      </View>
+  const handleScroll = ({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const y = nativeEvent.contentOffset.y;
 
-      {feedItems.map((item) => (
-        <PostItem key={item.id} item={item} />
-      ))}
-    </ScrollView>
+    if (y < 0) {
+      lastScrollY.current = 0;
+      return;
+    }
+
+    const diff = y - lastScrollY.current;
+    lastScrollY.current = y;
+
+    const nextCollapsed = Math.max(0, Math.min(titleBarHeight, currentCollapsed.current + diff));
+    currentCollapsed.current = nextCollapsed;
+    collapsedAmount.setValue(nextCollapsed);
+  };
+
+  return (
+    <View style={styles.screen}>
+      <Animated.View style={[styles.headerShell, { height: headerHeight, paddingTop: insets.top }]}>
+        <Animated.View style={[styles.titleBar, { transform: [{ translateY: titleBarTranslateY }] }]}>
+          <Text style={styles.title}>Perch</Text>
+        </Animated.View>
+      </Animated.View>
+
+      <Animated.ScrollView
+        style={styles.container}
+        showsVerticalScrollIndicator={false}
+        scrollEventThrottle={16}
+        onScroll={handleScroll}>
+        <Animated.View style={{ height: headerHeight }} />
+        {feedItems.map((item) => (
+          <PostItem key={item.id} item={item} />
+        ))}
+      </Animated.ScrollView>
+    </View>
   );
 }
 
@@ -106,15 +144,28 @@ function PostItem({ item }: { item: any }) {
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
   container: {
     flex: 1,
     backgroundColor: '#fff',
   },
-  header: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+  headerShell: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
     backgroundColor: '#fff',
+    overflow: 'hidden',
     zIndex: 10,
+  },
+  titleBar: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 12,
+    backgroundColor: '#fff',
   },
   title: {
     fontSize: 20,
