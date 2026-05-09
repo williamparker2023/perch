@@ -3,46 +3,55 @@ import { ArrowLeft, ImagePlus, Lock, MapPin, Unlock } from 'lucide-react-native'
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
+import { useThemeColor } from '@/hooks/use-theme-color';
+
 export default function NewBoardScreen() {
+  const backgroundColor = useThemeColor({}, 'background');
+  const textColor = useThemeColor({}, 'text');
+  const secondaryTextColor = useThemeColor({}, 'secondaryText');
+  const borderColor = useThemeColor({}, 'border');
+  const surfaceStrongColor = useThemeColor({}, 'surfaceStrong');
   const [isPrivate, setIsPrivate] = useState(false);
   const [boardName, setBoardName] = useState("");
   const [location, setLocation] = useState("");
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <View style={styles.header}>
+    <ScrollView style={[styles.container, { backgroundColor }]} showsVerticalScrollIndicator={false}>
+      <View style={[styles.header, { borderBottomColor: borderColor }]}>
         <TouchableOpacity onPress={() => router.back()}>
-          <ArrowLeft size={24} color="#000" />
+          <ArrowLeft size={24} color={textColor} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>New Board</Text>
-        <TouchableOpacity style={styles.createButton}>
+        <Text style={[styles.headerTitle, { color: textColor }]}>New Board</Text>
+        <TouchableOpacity style={[styles.createButton, { backgroundColor: surfaceStrongColor }]}>
           <Text style={styles.createText}>Create</Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.form}>
         <TouchableOpacity style={styles.imageUpload}>
-          <ImagePlus size={22} color="#999" />
+          <ImagePlus size={22} color={secondaryTextColor} />
           <View style={styles.imageUploadText}>
-            <Text style={styles.imageUploadTitle}>Add Banner Photo</Text>
-            <Text style={styles.imageUploadSubtext}>Optional cover image</Text>
+            <Text style={[styles.imageUploadTitle, { color: textColor }]}>Add Banner Photo</Text>
+            <Text style={[styles.imageUploadSubtext, { color: secondaryTextColor }]}>Optional cover image</Text>
           </View>
         </TouchableOpacity>
 
         <View style={styles.formField}>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { color: textColor }]}
             placeholder="Name of board (e.g., Summer in Paris)"
+            placeholderTextColor={secondaryTextColor}
             value={boardName}
             onChangeText={setBoardName}
           />
         </View>
 
         <View style={[styles.formField, styles.borderBottom]}>
-          <MapPin size={20} color="#999" />
+          <MapPin size={20} color={secondaryTextColor} />
           <TextInput
-            style={styles.input}
+            style={[styles.input, { color: textColor }]}
             placeholder="City or Region"
+            placeholderTextColor={secondaryTextColor}
             value={location}
             onChangeText={setLocation}
           />
@@ -50,19 +59,19 @@ export default function NewBoardScreen() {
 
         <View style={styles.privacyContainer}>
           <View>
-            <Text style={styles.privacyLabel}>
+            <Text style={[styles.privacyLabel, { color: textColor }]}>
               {!isPrivate ? "Public" : "Private"}
             </Text>
-            <Text style={styles.privacySubtext}>
+            <Text style={[styles.privacySubtext, { color: secondaryTextColor }]}>
               {!isPrivate ? "Anyone can see this board" : "Only you can see this board"}
             </Text>
           </View>
           <TouchableOpacity 
-            style={[styles.toggle, isPrivate && styles.toggleActive]}
+            style={[styles.toggle, isPrivate && styles.toggleActive, isPrivate && { backgroundColor: surfaceStrongColor }]}
             onPress={() => setIsPrivate(!isPrivate)}
           >
             {!isPrivate ? (
-              <Unlock size={12} color="#666" />
+              <Unlock size={12} color={secondaryTextColor} />
             ) : (
               <Lock size={12} color="#fff" />
             )}
@@ -76,7 +85,6 @@ export default function NewBoardScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   header: {
     flexDirection: 'row',
@@ -85,15 +93,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
   },
   headerTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#000',
   },
   createButton: {
-    backgroundColor: '#000',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
@@ -123,11 +128,9 @@ const styles = StyleSheet.create({
   imageUploadTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#000',
   },
   imageUploadSubtext: {
     fontSize: 12,
-    color: '#999',
     marginTop: 2,
   },
   formField: {
@@ -144,7 +147,6 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 14,
-    color: '#000',
     padding: 0,
   },
   privacyContainer: {
@@ -160,11 +162,9 @@ const styles = StyleSheet.create({
   privacyLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#000',
   },
   privacySubtext: {
     fontSize: 12,
-    color: '#999',
     marginTop: 2,
   },
   toggle: {
@@ -176,6 +176,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   toggleActive: {
-    backgroundColor: '#000',
   },
 });

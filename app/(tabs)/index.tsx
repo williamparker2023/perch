@@ -5,8 +5,13 @@ import { useRef, useState } from 'react';
 import { Animated, Image, NativeScrollEvent, NativeSyntheticEvent, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useThemeColor } from '@/hooks/use-theme-color';
+
 export default function FeedScreen() {
   const insets = useSafeAreaInsets();
+  const backgroundColor = useThemeColor({}, 'background');
+  const navChromeColor = useThemeColor({}, 'navChrome');
+  const textColor = useThemeColor({}, 'text');
   const titleBarHeight = 52;
   const collapsedAmount = useRef(new Animated.Value(0)).current;
   const lastScrollY = useRef(0);
@@ -46,15 +51,15 @@ export default function FeedScreen() {
   };
 
   return (
-    <View style={styles.screen}>
-      <Animated.View style={[styles.headerShell, { height: headerHeight, paddingTop: insets.top }]}>
-        <Animated.View style={[styles.titleBar, { transform: [{ translateY: titleBarTranslateY }] }]}>
-          <Text style={styles.title}>Perch</Text>
+    <View style={[styles.screen, { backgroundColor: navChromeColor }]}>
+      <Animated.View style={[styles.headerShell, { height: headerHeight, paddingTop: insets.top, backgroundColor: navChromeColor }]}>
+        <Animated.View style={[styles.titleBar, { transform: [{ translateY: titleBarTranslateY }], backgroundColor: navChromeColor }]}>
+          <Text style={[styles.title, { color: textColor }]}>Perch</Text>
         </Animated.View>
       </Animated.View>
 
       <Animated.ScrollView
-        style={styles.container}
+        style={[styles.container, { backgroundColor: navChromeColor }]}
         showsVerticalScrollIndicator={false}
         scrollEventThrottle={16}
         onScroll={handleScroll}>
@@ -68,6 +73,12 @@ export default function FeedScreen() {
 }
 
 function PostItem({ item }: { item: any }) {
+  const navChromeColor = useThemeColor({}, 'navChrome');
+  const textColor = useThemeColor({}, 'text');
+  const secondaryTextColor = useThemeColor({}, 'secondaryText');
+  const mutedTextColor = useThemeColor({}, 'mutedText');
+  const iconColor = useThemeColor({}, 'text');
+  const surfaceMutedColor = useThemeColor({}, 'surfaceMuted');
   const [isLiked, setIsLiked] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [showHeartAnim, setShowHeartAnim] = useState(false);
@@ -86,24 +97,27 @@ function PostItem({ item }: { item: any }) {
   };
 
   return (
-    <View>
-      <View style={styles.postHeader}>
+    <View style={{ backgroundColor: navChromeColor }}>
+      <View style={[styles.postHeader, { backgroundColor: navChromeColor }]}>
         <TouchableOpacity onPress={() => router.push(`/profile/${item.user.id}`)}>
           <Image source={{ uri: item.user.avatar }} style={styles.avatar} />
         </TouchableOpacity>
         <View style={styles.userInfo}>
           <TouchableOpacity onPress={() => router.push(`/profile/${item.user.id}`)}>
-            <Text style={styles.userName}>{item.user.handle}</Text>
+            <Text style={[styles.userName, { color: textColor }]}>{item.user.handle}</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => router.push(`/collection/${item.collection.id}`)}>
-            <Text style={styles.collectionInfo}>
+            <Text style={[styles.collectionInfo, { color: secondaryTextColor }]}>
               {item.collection.title}: {item.name}
             </Text>
           </TouchableOpacity>
         </View>
       </View>
 
-      <TouchableOpacity activeOpacity={0.95} onPress={handleDoubleClick} style={styles.imageContainer}>
+      <TouchableOpacity
+        activeOpacity={0.95}
+        onPress={handleDoubleClick}
+        style={[styles.imageContainer, { backgroundColor: surfaceMutedColor }]}>
         <Image source={{ uri: item.image }} style={styles.postImage} />
         {showHeartAnim && (
           <Animated.View style={[styles.heartAnimation, { transform: [{ scale: heartScale }] }]}>
@@ -112,32 +126,32 @@ function PostItem({ item }: { item: any }) {
         )}
       </TouchableOpacity>
 
-      <View style={styles.contentFooter}>
+      <View style={[styles.contentFooter, { backgroundColor: navChromeColor }]}>
         <View style={styles.actionsRow}>
           <TouchableOpacity onPress={() => setIsLiked(!isLiked)}>
-            <Heart size={24} color={isLiked ? '#ef4444' : '#000'} fill={isLiked ? '#ef4444' : 'none'} />
+            <Heart size={24} color={isLiked ? '#ef4444' : iconColor} fill={isLiked ? '#ef4444' : 'none'} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => router.push(`/post/${item.id}`)}>
-            <MessageCircle size={24} color="#000" />
+            <MessageCircle size={24} color={iconColor} />
           </TouchableOpacity>
           <TouchableOpacity>
-            <Share2 size={24} color="#000" />
+            <Share2 size={24} color={iconColor} />
           </TouchableOpacity>
           <View style={styles.flexEnd}>
             <TouchableOpacity onPress={() => setIsSaved(!isSaved)}>
-              <Sparkles size={24} color="#000" fill={isSaved ? '#000' : 'none'} />
+              <Sparkles size={24} color={iconColor} fill={isSaved ? iconColor : 'none'} />
             </TouchableOpacity>
           </View>
         </View>
 
         {item.notes && (
-          <Text style={styles.caption}>
+          <Text style={[styles.caption, { color: textColor }]}>
             <Text style={styles.captionHandle}>{item.user.handle} </Text>
-            <Text style={styles.captionText}>{item.notes}</Text>
+            <Text style={[styles.captionText, { color: textColor }]}>{item.notes}</Text>
           </Text>
         )}
 
-        <Text style={styles.timestamp}>{item.timestamp}</Text>
+        <Text style={[styles.timestamp, { color: mutedTextColor }]}>{item.timestamp}</Text>
       </View>
     </View>
   );
@@ -146,18 +160,15 @@ function PostItem({ item }: { item: any }) {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   headerShell: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#fff',
     overflow: 'hidden',
     zIndex: 10,
   },
@@ -165,12 +176,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 12,
-    backgroundColor: '#fff',
   },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#000',
   },
   postHeader: {
     flexDirection: 'row',
@@ -191,17 +200,14 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#000',
   },
   collectionInfo: {
     fontSize: 11,
-    color: '#666',
     marginTop: 2,
   },
   imageContainer: {
     width: '100%',
     aspectRatio: 4 / 5,
-    backgroundColor: '#f0f0f0',
     position: 'relative',
   },
   postImage: {
@@ -231,7 +237,6 @@ const styles = StyleSheet.create({
   },
   caption: {
     fontSize: 13,
-    color: '#000',
     lineHeight: 18,
     marginBottom: 8,
   },
@@ -239,11 +244,9 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   captionText: {
-    color: '#000',
   },
   timestamp: {
     fontSize: 12,
-    color: '#999',
     letterSpacing: 0.5,
   },
 });

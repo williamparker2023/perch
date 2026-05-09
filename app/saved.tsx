@@ -4,9 +4,18 @@ import { Bookmark, FileText } from 'lucide-react-native';
 import { useMemo, useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
+import { useThemeColor } from '@/hooks/use-theme-color';
+
 type Filter = 'all' | 'places' | 'collections';
 
 export default function SavedScreen() {
+  const backgroundColor = useThemeColor({}, 'background');
+  const textColor = useThemeColor({}, 'text');
+  const secondaryTextColor = useThemeColor({}, 'secondaryText');
+  const borderColor = useThemeColor({}, 'border');
+  const surfaceColor = useThemeColor({}, 'surface');
+  const surfaceMutedColor = useThemeColor({}, 'surfaceMuted');
+  const surfaceStrongColor = useThemeColor({}, 'surfaceStrong');
   const [filter, setFilter] = useState<Filter>('all');
   const [activeNotesId, setActiveNotesId] = useState<string | null>(null);
 
@@ -27,18 +36,28 @@ export default function SavedScreen() {
     filter === 'all' ? items : items.filter((item) => item.type === filter.slice(0, -1));
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Saved</Text>
+    <ScrollView style={[styles.container, { backgroundColor }]} showsVerticalScrollIndicator={false}>
+      <View style={[styles.header, { backgroundColor: surfaceColor, borderBottomColor: borderColor }]}>
+        <Text style={[styles.headerTitle, { color: textColor }]}>Saved</Text>
       </View>
 
-      <View style={styles.filters}>
+      <View style={[styles.filters, { backgroundColor: surfaceColor }]}>
         {(['all', 'places', 'collections'] as Filter[]).map((value) => (
           <TouchableOpacity
             key={value}
-            style={[styles.filterButton, filter === value && styles.filterButtonActive]}
+            style={[
+              styles.filterButton,
+              { borderColor, backgroundColor: surfaceColor },
+              filter === value && styles.filterButtonActive,
+              filter === value && { backgroundColor: surfaceStrongColor, borderColor: surfaceStrongColor },
+            ]}
             onPress={() => setFilter(value)}>
-            <Text style={[styles.filterText, filter === value && styles.filterTextActive]}>
+            <Text
+              style={[
+                styles.filterText,
+                { color: secondaryTextColor },
+                filter === value && styles.filterTextActive,
+              ]}>
               {value === 'all' ? 'All Saves' : value[0].toUpperCase() + value.slice(1)}
             </Text>
           </TouchableOpacity>
@@ -52,7 +71,7 @@ export default function SavedScreen() {
             return (
               <TouchableOpacity
                 key={item.id}
-                style={styles.placeCard}
+                style={[styles.placeCard, { backgroundColor: surfaceColor }]}
                 onPress={() => router.push(`/post/${place.id}`)}>
                 <Image source={{ uri: place.image }} style={styles.placeImage} />
                 <View style={styles.badge}>
@@ -64,9 +83,9 @@ export default function SavedScreen() {
                   {place.notes ? <FileText size={16} color="#fff" /> : <Bookmark size={16} color="#fff" fill="#fff" />}
                 </TouchableOpacity>
                 <View style={styles.placeBody}>
-                  <Text style={styles.placeTitle}>{place.name}</Text>
+                  <Text style={[styles.placeTitle, { color: textColor }]}>{place.name}</Text>
                   {activeNotesId === item.id && !!place.notes && (
-                    <Text style={styles.placeNotes}>{place.notes}</Text>
+                    <Text style={[styles.placeNotes, { color: secondaryTextColor }]}>{place.notes}</Text>
                   )}
                 </View>
               </TouchableOpacity>
@@ -77,7 +96,7 @@ export default function SavedScreen() {
           return (
             <TouchableOpacity
               key={item.id}
-              style={styles.collectionCard}
+              style={[styles.collectionCard, { backgroundColor: surfaceMutedColor }]}
               onPress={() => router.push(`/collection/${collection.id}`)}>
               <Image source={{ uri: collection.coverImage }} style={styles.collectionImage} />
               <View style={styles.collectionOverlay}>
@@ -95,42 +114,32 @@ export default function SavedScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
   },
   header: {
-    backgroundColor: '#fff',
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#111827',
   },
   filters: {
     flexDirection: 'row',
     gap: 8,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#fff',
   },
   filterButton: {
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
-    backgroundColor: '#fff',
   },
   filterButtonActive: {
-    backgroundColor: '#000',
-    borderColor: '#000',
   },
   filterText: {
     fontSize: 12,
-    color: '#374151',
   },
   filterTextActive: {
     color: '#fff',
@@ -143,7 +152,6 @@ const styles = StyleSheet.create({
   },
   placeCard: {
     width: '47%',
-    backgroundColor: '#fff',
     borderRadius: 16,
     overflow: 'hidden',
   },
@@ -180,12 +188,10 @@ const styles = StyleSheet.create({
   },
   placeTitle: {
     fontSize: 14,
-    color: '#111827',
     fontWeight: '500',
   },
   placeNotes: {
     fontSize: 12,
-    color: '#6b7280',
     marginTop: 8,
     lineHeight: 18,
   },

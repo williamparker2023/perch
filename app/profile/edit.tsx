@@ -4,7 +4,14 @@ import { ArrowLeft, Camera } from 'lucide-react-native';
 import { useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
+import { useThemeColor } from '@/hooks/use-theme-color';
+
 export default function EditProfileScreen() {
+  const backgroundColor = useThemeColor({}, 'background');
+  const textColor = useThemeColor({}, 'text');
+  const secondaryTextColor = useThemeColor({}, 'secondaryText');
+  const borderColor = useThemeColor({}, 'border');
+  const surfaceMutedColor = useThemeColor({}, 'surfaceMuted');
   const [name, setName] = useState(currentUser.name);
   const [bio, setBio] = useState(currentUser.bio || '');
   const [avatar, setAvatar] = useState(currentUser.avatar);
@@ -21,14 +28,14 @@ export default function EditProfileScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <View style={styles.header}>
+    <ScrollView style={[styles.container, { backgroundColor }]} showsVerticalScrollIndicator={false}>
+      <View style={[styles.header, { borderBottomColor: borderColor }]}>
         <TouchableOpacity onPress={() => router.back()}>
-          <ArrowLeft size={24} color="#000" />
+          <ArrowLeft size={24} color={textColor} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Edit Profile</Text>
+        <Text style={[styles.headerTitle, { color: textColor }]}>Edit Profile</Text>
         <TouchableOpacity onPress={handleSave}>
-          <Text style={styles.saveText}>Save</Text>
+          <Text style={[styles.saveText, { color: textColor }]}>Save</Text>
         </TouchableOpacity>
       </View>
 
@@ -36,14 +43,15 @@ export default function EditProfileScreen() {
         <View style={styles.avatarSection}>
           <View style={styles.avatarWrap}>
             <Image source={{ uri: avatar }} style={styles.avatar} />
-            <View style={styles.cameraBadge}>
+            <View style={[styles.cameraBadge, { backgroundColor: surfaceMutedColor }]}>
               <Camera size={16} color="#fff" />
             </View>
           </View>
 
           <TextInput
-            style={styles.input}
+            style={[styles.input, { borderColor, color: textColor }]}
             placeholder="Enter image URL"
+            placeholderTextColor={secondaryTextColor}
             value={imageInput}
             onChangeText={setImageInput}
             autoCapitalize="none"
@@ -60,17 +68,24 @@ export default function EditProfileScreen() {
         </View>
 
         <View style={styles.field}>
-          <Text style={styles.label}>Name</Text>
-          <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="Your name" />
+          <Text style={[styles.label, { color: secondaryTextColor }]}>Name</Text>
+          <TextInput
+            style={[styles.input, { borderColor, color: textColor }]}
+            value={name}
+            onChangeText={setName}
+            placeholder="Your name"
+            placeholderTextColor={secondaryTextColor}
+          />
         </View>
 
         <View style={styles.field}>
-          <Text style={styles.label}>Bio</Text>
+          <Text style={[styles.label, { color: secondaryTextColor }]}>Bio</Text>
           <TextInput
-            style={[styles.input, styles.bioInput]}
+            style={[styles.input, styles.bioInput, { borderColor, color: textColor }]}
             value={bio}
             onChangeText={setBio}
             placeholder="Tell us about yourself..."
+            placeholderTextColor={secondaryTextColor}
             multiline
             textAlignVertical="top"
           />
@@ -83,7 +98,6 @@ export default function EditProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   header: {
     flexDirection: 'row',
@@ -92,16 +106,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
   },
   headerTitle: {
     fontSize: 18,
-    color: '#111827',
     fontWeight: '500',
   },
   saveText: {
     fontSize: 15,
-    color: '#000',
   },
   content: {
     padding: 16,
@@ -125,7 +136,6 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#000',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
@@ -136,17 +146,14 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 12,
-    color: '#6b7280',
     marginBottom: 8,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#e5e7eb',
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 14,
-    color: '#111827',
     width: '100%',
   },
   bioInput: {

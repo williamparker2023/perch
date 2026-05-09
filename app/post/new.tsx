@@ -4,11 +4,15 @@ import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import { collections } from '@/constants/data';
+import { useThemeColor } from '@/hooks/use-theme-color';
 
 const CATEGORIES = ["Do Local", "Fitness", "Food", "Lodging", "Museum", "Shops", "Sights", "Other"];
 const PRICES = ["Free/NA", "$", "$$", "$$$"];
 
 export default function NewPostScreen() {
+  const textColor = useThemeColor({}, 'text');
+  const secondaryTextColor = useThemeColor({}, 'secondaryText');
+  const surfaceStrongColor = useThemeColor({}, 'surfaceStrong');
   const { boardId } = useLocalSearchParams<{ boardId?: string }>();
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedPrice, setSelectedPrice] = useState("Free/NA");
@@ -23,12 +27,12 @@ export default function NewPostScreen() {
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
-          <ArrowLeft size={24} color="#000" />
+          <ArrowLeft size={24} color={textColor} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>
           {board ? `New Post: ${board.title}` : 'New Post'}
         </Text>
-        <TouchableOpacity style={styles.publishButton}>
+        <TouchableOpacity style={[styles.publishButton, { backgroundColor: surfaceStrongColor }]}>
           <Text style={styles.publishText}>Post</Text>
         </TouchableOpacity>
       </View>
@@ -40,7 +44,8 @@ export default function NewPostScreen() {
             onPress={() => setSelectedCategory(cat)}
             style={[
               styles.categoryButton,
-              selectedCategory === cat && styles.categoryButtonActive
+              selectedCategory === cat && styles.categoryButtonActive,
+              selectedCategory === cat && { backgroundColor: surfaceStrongColor, borderColor: surfaceStrongColor }
             ]}
           >
             <Text style={[
@@ -55,13 +60,13 @@ export default function NewPostScreen() {
 
       <View style={styles.form}>
         <TouchableOpacity style={styles.imageUpload}>
-          <ImagePlus size={24} color="#999" />
+          <ImagePlus size={24} color={secondaryTextColor} />
           <Text style={styles.imageUploadText}>Add Photo or Video</Text>
           <Text style={styles.imageUploadSubtext}>Up to 5 photos</Text>
         </TouchableOpacity>
 
         <View style={styles.formField}>
-          <MapPin size={20} color="#999" />
+          <MapPin size={20} color={secondaryTextColor} />
           <TextInput
             style={styles.input}
             placeholder="Place name"
@@ -112,7 +117,8 @@ export default function NewPostScreen() {
                 onPress={() => setSelectedPrice(price)}
                 style={[
                   styles.priceButton,
-                  selectedPrice === price && styles.priceButtonActive
+                  selectedPrice === price && styles.priceButtonActive,
+                  selectedPrice === price && { backgroundColor: surfaceStrongColor, borderColor: surfaceStrongColor }
                 ]}
               >
                 <Text style={[
@@ -166,7 +172,6 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   publishButton: {
-    backgroundColor: '#000',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
@@ -190,8 +195,6 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
   categoryButtonActive: {
-    backgroundColor: '#000',
-    borderColor: '#000',
   },
   categoryText: {
     fontSize: 13,
@@ -257,8 +260,6 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   priceButtonActive: {
-    backgroundColor: '#000',
-    borderColor: '#000',
   },
   priceText: {
     fontSize: 13,

@@ -4,8 +4,14 @@ import { useRef, useState } from 'react';
 import { Animated, Image, NativeScrollEvent, NativeSyntheticEvent, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useThemeColor } from '@/hooks/use-theme-color';
+
 export default function InspoScreen() {
   const insets = useSafeAreaInsets();
+  const backgroundColor = useThemeColor({}, 'background');
+  const navChromeColor = useThemeColor({}, 'navChrome');
+  const textColor = useThemeColor({}, 'text');
+  const borderColor = useThemeColor({ light: '#f0f0f0', dark: '#2a2d2e' }, 'background');
   const collapsibleHeaderHeight = 101;
   const collapsedAmount = useRef(new Animated.Value(0)).current;
   const lastScrollY = useRef(0);
@@ -46,18 +52,18 @@ export default function InspoScreen() {
 
   return (
     <View style={styles.screen}>
-      <Animated.View style={[styles.headerShell, { height: headerHeight, paddingTop: insets.top }]}>
-        <Animated.View style={[styles.headerContent, { transform: [{ translateY: headerTranslateY }] }]}>
-          <View style={styles.header}>
-            <Text style={styles.title}>Inspo</Text>
+      <Animated.View style={[styles.headerShell, { height: headerHeight, paddingTop: insets.top, backgroundColor: navChromeColor }]}>
+        <Animated.View style={[styles.headerContent, { transform: [{ translateY: headerTranslateY }], backgroundColor: navChromeColor }]}>
+          <View style={[styles.header, { borderBottomColor: borderColor }]}>
+            <Text style={[styles.title, { color: textColor }]}>Inspo</Text>
           </View>
 
-          <View style={styles.tabContainer}>
+          <View style={[styles.tabContainer, { borderBottomColor: borderColor }]}>
             <TouchableOpacity style={[styles.tab, tab === 'boards' && styles.tabActive]} onPress={() => setTab('boards')}>
-              <Text style={[styles.tabText, tab === 'boards' && styles.tabTextActive]}>Boards</Text>
+              <Text style={[styles.tabText, tab === 'boards' && styles.tabTextActive, { color: textColor }]}>Boards</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.tab, tab === 'posts' && styles.tabActive]} onPress={() => setTab('posts')}>
-              <Text style={[styles.tabText, tab === 'posts' && styles.tabTextActive]}>Posts</Text>
+              <Text style={[styles.tabText, tab === 'posts' && styles.tabTextActive, { color: textColor }]}>Posts</Text>
             </TouchableOpacity>
           </View>
         </Animated.View>
@@ -108,23 +114,19 @@ export default function InspoScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   headerShell: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#fff',
     overflow: 'hidden',
     zIndex: 10,
   },
   headerContent: {
-    backgroundColor: '#fff',
   },
   header: {
     paddingHorizontal: 16,
@@ -136,7 +138,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#000',
   },
   tabContainer: {
     flexDirection: 'row',
@@ -155,7 +156,6 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: 14,
-    color: '#999',
   },
   tabTextActive: {
     color: '#000',

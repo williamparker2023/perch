@@ -5,12 +5,23 @@ import { useMemo, useState } from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useThemeColor } from '@/hooks/use-theme-color';
+
 type ProfileScreenProps = {
   userId?: string;
 };
 
+const TOP_HEADER_HEIGHT = 52;
+
 export function ProfileScreen({ userId }: ProfileScreenProps) {
   const insets = useSafeAreaInsets();
+  const backgroundColor = useThemeColor({}, 'background');
+  const navChromeColor = useThemeColor({}, 'navChrome');
+  const textColor = useThemeColor({}, 'text');
+  const secondaryTextColor = useThemeColor({}, 'secondaryText');
+  const borderColor = useThemeColor({}, 'border');
+  const surfaceColor = useThemeColor({}, 'surface');
+  const surfaceMutedColor = useThemeColor({}, 'surfaceMuted');
   const [tab, setTab] = useState<'boards' | 'posts'>('boards');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -42,12 +53,12 @@ export function ProfileScreen({ userId }: ProfileScreenProps) {
         style={styles.container}
         showsVerticalScrollIndicator={false}
         stickyHeaderIndices={[0]}>
-        <View style={[styles.headerShell, { paddingTop: insets.top }]}>
-          <View style={styles.headerRow}>
-            <Text style={styles.headerTitle}>{profileUser.handle}</Text>
+        <View style={[styles.headerShell, { paddingTop: insets.top, backgroundColor: navChromeColor }]}>
+          <View style={[styles.headerRow, { backgroundColor: navChromeColor, borderBottomColor: borderColor }]}>
+            <Text style={[styles.headerTitle, { color: textColor }]}>{profileUser.handle}</Text>
             {isOwnProfile && (
               <TouchableOpacity onPress={() => setIsMenuOpen((open) => !open)}>
-                <Settings size={22} color="#000" />
+                <Settings size={22} color={textColor} />
               </TouchableOpacity>
             )}
           </View>
@@ -73,18 +84,34 @@ export function ProfileScreen({ userId }: ProfileScreenProps) {
         </View>
 
         <View style={styles.infoContainer}>
-          <Text style={styles.name}>{profileUser.name}</Text>
-          {!!profileUser.bio && <Text style={styles.bio}>{profileUser.bio}</Text>}
+          <Text style={[styles.name, { color: textColor }]}>{profileUser.name}</Text>
+          {!!profileUser.bio && <Text style={[styles.bio, { color: secondaryTextColor }]}>{profileUser.bio}</Text>}
         </View>
 
-        <View style={styles.tabContainer}>
+        <View style={[styles.tabContainer, { borderColor }]}>
           <TouchableOpacity style={styles.tabButton} onPress={() => setTab('boards')}>
-            <Text style={[styles.tabButtonText, tab === 'boards' && styles.tabButtonTextActive]}>Boards</Text>
-            {tab === 'boards' && <View style={styles.tabUnderline} />}
+            <Text
+              style={[
+                styles.tabButtonText,
+                { color: secondaryTextColor },
+                tab === 'boards' && styles.tabButtonTextActive,
+                tab === 'boards' && { color: textColor },
+              ]}>
+              Boards
+            </Text>
+            {tab === 'boards' && <View style={[styles.tabUnderline, { backgroundColor: textColor }]} />}
           </TouchableOpacity>
           <TouchableOpacity style={styles.tabButton} onPress={() => setTab('posts')}>
-            <Text style={[styles.tabButtonText, tab === 'posts' && styles.tabButtonTextActive]}>Posts</Text>
-            {tab === 'posts' && <View style={styles.tabUnderline} />}
+            <Text
+              style={[
+                styles.tabButtonText,
+                { color: secondaryTextColor },
+                tab === 'posts' && styles.tabButtonTextActive,
+                tab === 'posts' && { color: textColor },
+              ]}>
+              Posts
+            </Text>
+            {tab === 'posts' && <View style={[styles.tabUnderline, { backgroundColor: textColor }]} />}
           </TouchableOpacity>
         </View>
 
@@ -94,7 +121,7 @@ export function ProfileScreen({ userId }: ProfileScreenProps) {
                 <Pressable
                   key={collection.id}
                   onPress={() => router.push(`/collection/${collection.id}`)}
-                  style={styles.boardItem}>
+                  style={[styles.boardItem, { backgroundColor: surfaceMutedColor }]}>
                   <Image source={{ uri: collection.coverImage }} style={styles.gridImage} />
                   <View style={styles.gridOverlay}>
                     <Text style={styles.gridSubtitle}>{collection.isPublic ? 'Public' : 'Private'}</Text>
@@ -106,7 +133,10 @@ export function ProfileScreen({ userId }: ProfileScreenProps) {
                 const board = collections.find((collection) => collection.id === post.collectionId);
 
                 return (
-                  <Pressable key={post.id} onPress={() => router.push(`/post/${post.id}`)} style={styles.postItem}>
+                  <Pressable
+                    key={post.id}
+                    onPress={() => router.push(`/post/${post.id}`)}
+                    style={[styles.postItem, { backgroundColor: surfaceMutedColor }]}>
                     <Image source={{ uri: post.image }} style={styles.gridImage} />
                     <View style={styles.gridOverlay}>
                       <Text style={styles.gridSubtitle}>{board?.title}</Text>
@@ -122,19 +152,19 @@ export function ProfileScreen({ userId }: ProfileScreenProps) {
         <Pressable
           style={[styles.menuOverlay, { paddingTop: insets.top + 60 }]}
           onPress={() => setIsMenuOpen(false)}>
-          <View style={styles.menuContainer}>
+          <View style={[styles.menuContainer, { backgroundColor: surfaceColor }]}>
             <TouchableOpacity
-              style={styles.menuItem}
+              style={[styles.menuItem, { borderBottomColor: borderColor }]}
               onPress={() => {
                 setIsMenuOpen(false);
                 router.push('/profile/edit');
               }}>
-              <Edit3 size={20} color="#000" />
-              <Text style={styles.menuItemText}>Edit Profile</Text>
+              <Edit3 size={20} color={textColor} />
+              <Text style={[styles.menuItemText, { color: textColor }]}>Edit Profile</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.menuItem} onPress={() => setIsMenuOpen(false)}>
-              <Settings size={20} color="#000" />
-              <Text style={styles.menuItemText}>Settings</Text>
+            <TouchableOpacity style={[styles.menuItem, { borderBottomColor: borderColor }]} onPress={() => setIsMenuOpen(false)}>
+              <Settings size={20} color={textColor} />
+              <Text style={[styles.menuItemText, { color: textColor }]}>Settings</Text>
             </TouchableOpacity>
           </View>
         </Pressable>
@@ -146,31 +176,25 @@ export function ProfileScreen({ userId }: ProfileScreenProps) {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   headerShell: {
-    backgroundColor: '#fff',
     zIndex: 10,
   },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    minHeight: TOP_HEADER_HEIGHT,
     paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 12,
-    backgroundColor: '#fff',
+    paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#000',
   },
   bannerContainer: {
     width: '100%',
@@ -229,19 +253,16 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#000',
     marginBottom: 8,
   },
   bio: {
     fontSize: 14,
-    color: '#333',
     lineHeight: 20,
   },
   tabContainer: {
     flexDirection: 'row',
     borderTopWidth: 1,
     borderBottomWidth: 1,
-    borderColor: '#f0f0f0',
   },
   tabButton: {
     flex: 1,
@@ -250,10 +271,8 @@ const styles = StyleSheet.create({
   },
   tabButtonText: {
     fontSize: 14,
-    color: '#999',
   },
   tabButtonTextActive: {
-    color: '#000',
     fontWeight: '600',
   },
   tabUnderline: {
@@ -262,7 +281,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 2,
-    backgroundColor: '#000',
   },
   contentGrid: {
     flexDirection: 'row',
@@ -276,14 +294,12 @@ const styles = StyleSheet.create({
     aspectRatio: 5 / 3,
     borderRadius: 12,
     overflow: 'hidden',
-    backgroundColor: '#f0f0f0',
   },
   postItem: {
     width: '31%',
     aspectRatio: 1,
     borderRadius: 8,
     overflow: 'hidden',
-    backgroundColor: '#f0f0f0',
   },
   gridImage: {
     width: '100%',
@@ -321,7 +337,6 @@ const styles = StyleSheet.create({
     paddingRight: 16,
   },
   menuContainer: {
-    backgroundColor: '#fff',
     borderRadius: 12,
     overflow: 'hidden',
     width: 200,
@@ -333,10 +348,8 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     gap: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
   },
   menuItemText: {
     fontSize: 15,
-    color: '#000',
   },
 });

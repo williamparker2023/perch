@@ -3,51 +3,60 @@ import { ArrowLeft, ImagePlus, Lock, MapPin, Sparkles, Unlock } from 'lucide-rea
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
+import { useThemeColor } from '@/hooks/use-theme-color';
+
 export default function NewInspoScreen() {
+  const backgroundColor = useThemeColor({}, 'background');
+  const textColor = useThemeColor({}, 'text');
+  const secondaryTextColor = useThemeColor({}, 'secondaryText');
+  const borderColor = useThemeColor({}, 'border');
+  const surfaceStrongColor = useThemeColor({}, 'surfaceStrong');
   const [isPrivate, setIsPrivate] = useState(false);
   const [boardName, setBoardName] = useState('');
   const [location, setLocation] = useState('');
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <View style={styles.header}>
+    <ScrollView style={[styles.container, { backgroundColor }]} showsVerticalScrollIndicator={false}>
+      <View style={[styles.header, { borderBottomColor: borderColor }]}>
         <View style={styles.headerLeft}>
           <TouchableOpacity onPress={() => router.back()}>
-            <ArrowLeft size={24} color="#000" />
+            <ArrowLeft size={24} color={textColor} />
           </TouchableOpacity>
           <View style={styles.headerTitleWrap}>
-            <Sparkles size={18} color="#000" />
-            <Text style={styles.headerTitle}>New Inspo Board</Text>
+            <Sparkles size={18} color={textColor} />
+            <Text style={[styles.headerTitle, { color: textColor }]}>New Inspo Board</Text>
           </View>
         </View>
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity style={[styles.button, { backgroundColor: surfaceStrongColor }]}>
           <Text style={styles.buttonText}>Create</Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.form}>
         <TouchableOpacity style={styles.imageUpload}>
-          <ImagePlus size={22} color="#999" />
+          <ImagePlus size={22} color={secondaryTextColor} />
           <View style={styles.imageUploadText}>
-            <Text style={styles.imageUploadTitle}>Add Cover Photo</Text>
-            <Text style={styles.imageUploadSubtext}>Optional banner image</Text>
+            <Text style={[styles.imageUploadTitle, { color: textColor }]}>Add Cover Photo</Text>
+            <Text style={[styles.imageUploadSubtext, { color: secondaryTextColor }]}>Optional banner image</Text>
           </View>
         </TouchableOpacity>
 
         <View style={styles.formField}>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { color: textColor }]}
             placeholder="Name of inspo board (e.g., Dream Tokyo Trip)"
+            placeholderTextColor={secondaryTextColor}
             value={boardName}
             onChangeText={setBoardName}
           />
         </View>
 
         <View style={[styles.formField, styles.borderBottom]}>
-          <MapPin size={20} color="#999" />
+          <MapPin size={20} color={secondaryTextColor} />
           <TextInput
-            style={styles.input}
+            style={[styles.input, { color: textColor }]}
             placeholder="City, Region, or Country"
+            placeholderTextColor={secondaryTextColor}
             value={location}
             onChangeText={setLocation}
           />
@@ -55,15 +64,15 @@ export default function NewInspoScreen() {
 
         <View style={styles.privacyContainer}>
           <View>
-            <Text style={styles.privacyLabel}>{!isPrivate ? 'Public' : 'Private'}</Text>
-            <Text style={styles.privacySubtext}>
+            <Text style={[styles.privacyLabel, { color: textColor }]}>{!isPrivate ? 'Public' : 'Private'}</Text>
+            <Text style={[styles.privacySubtext, { color: secondaryTextColor }]}>
               {!isPrivate ? 'Anyone can see this board' : 'Only you can see this board'}
             </Text>
           </View>
           <TouchableOpacity
-            style={[styles.toggle, isPrivate && styles.toggleActive]}
+            style={[styles.toggle, isPrivate && styles.toggleActive, isPrivate && { backgroundColor: surfaceStrongColor }]}
             onPress={() => setIsPrivate((value) => !value)}>
-            {!isPrivate ? <Unlock size={12} color="#666" /> : <Lock size={12} color="#fff" />}
+            {!isPrivate ? <Unlock size={12} color={secondaryTextColor} /> : <Lock size={12} color="#fff" />}
           </TouchableOpacity>
         </View>
       </View>
@@ -74,7 +83,6 @@ export default function NewInspoScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   header: {
     flexDirection: 'row',
@@ -83,7 +91,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
   },
   headerLeft: {
     flexDirection: 'row',
@@ -98,10 +105,8 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#000',
   },
   button: {
-    backgroundColor: '#000',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
@@ -130,11 +135,9 @@ const styles = StyleSheet.create({
   imageUploadTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#000',
   },
   imageUploadSubtext: {
     fontSize: 12,
-    color: '#999',
     marginTop: 2,
   },
   formField: {
@@ -151,7 +154,6 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 14,
-    color: '#000',
     padding: 0,
   },
   privacyContainer: {
@@ -167,11 +169,9 @@ const styles = StyleSheet.create({
   privacyLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#000',
   },
   privacySubtext: {
     fontSize: 12,
-    color: '#999',
     marginTop: 2,
   },
   toggle: {
@@ -183,6 +183,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   toggleActive: {
-    backgroundColor: '#000',
   },
 });

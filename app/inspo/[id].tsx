@@ -4,8 +4,18 @@ import { ArrowLeft, Menu, Sparkles, X } from 'lucide-react-native';
 import { useMemo, useState } from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
+import { useThemeColor } from '@/hooks/use-theme-color';
+
 export default function InspoDetailScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
+  const backgroundColor = useThemeColor({}, 'background');
+  const textColor = useThemeColor({}, 'text');
+  const secondaryTextColor = useThemeColor({}, 'secondaryText');
+  const borderColor = useThemeColor({}, 'border');
+  const surfaceColor = useThemeColor({}, 'surface');
+  const surfaceMutedColor = useThemeColor({}, 'surfaceMuted');
+  const surfaceStrongColor = useThemeColor({}, 'surfaceStrong');
+  const iconColor = useThemeColor({}, 'text');
   const board = inspoBoards.find((entry) => entry.id === id);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [showMenu, setShowMenu] = useState(false);
@@ -27,8 +37,8 @@ export default function InspoDetailScreen() {
 
   if (!board) {
     return (
-      <View style={styles.centered}>
-        <Text style={styles.emptyText}>Inspo board not found.</Text>
+      <View style={[styles.centered, { backgroundColor }]}>
+        <Text style={[styles.emptyText, { color: secondaryTextColor }]}>Inspo board not found.</Text>
       </View>
     );
   }
@@ -39,14 +49,14 @@ export default function InspoDetailScreen() {
       : boardPlaces.filter((place) => place.category === activeCategory);
 
   return (
-    <View style={styles.container}>
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
+    <View style={[styles.container, { backgroundColor }]}>
+      <ScrollView style={[styles.container, { backgroundColor }]} showsVerticalScrollIndicator={false}>
+        <View style={[styles.header, { borderBottomColor: borderColor }]}>
           <TouchableOpacity onPress={() => router.back()}>
-            <ArrowLeft size={24} color="#000" />
+            <ArrowLeft size={24} color={iconColor} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => setShowMenu(true)}>
-            <Menu size={24} color="#000" />
+            <Menu size={24} color={iconColor} />
           </TouchableOpacity>
         </View>
 
@@ -71,10 +81,19 @@ export default function InspoDetailScreen() {
             {categories.map((category) => (
               <TouchableOpacity
                 key={category}
-                style={[styles.categoryChip, activeCategory === category && styles.categoryChipActive]}
+                style={[
+                  styles.categoryChip,
+                  { borderColor, backgroundColor: surfaceColor },
+                  activeCategory === category && styles.categoryChipActive,
+                  activeCategory === category && { backgroundColor: surfaceStrongColor, borderColor: surfaceStrongColor },
+                ]}
                 onPress={() => setActiveCategory(activeCategory === category ? null : category)}>
                 <Text
-                  style={[styles.categoryChipText, activeCategory === category && styles.categoryChipTextActive]}>
+                  style={[
+                    styles.categoryChipText,
+                    { color: secondaryTextColor },
+                    activeCategory === category && styles.categoryChipTextActive,
+                  ]}>
                   {category}
                 </Text>
               </TouchableOpacity>
@@ -85,14 +104,14 @@ export default function InspoDetailScreen() {
         <View style={styles.grid}>
           {filteredPlaces.length === 0 ? (
             <View style={styles.emptyState}>
-              <Sparkles size={28} color="#9ca3af" />
-              <Text style={styles.emptyStateText}>No inspiration saved here yet.</Text>
+              <Sparkles size={28} color={secondaryTextColor} />
+              <Text style={[styles.emptyStateText, { color: secondaryTextColor }]}>No inspiration saved here yet.</Text>
             </View>
           ) : (
             filteredPlaces.map((place) => (
               <TouchableOpacity
                 key={place.id}
-                style={styles.gridItem}
+                style={[styles.gridItem, { backgroundColor: surfaceMutedColor }]}
                 onPress={() => router.push(`/post/${place.id}`)}>
                 <Image source={{ uri: place.image }} style={styles.gridImage} />
                 <View style={styles.gridOverlay}>
@@ -106,18 +125,18 @@ export default function InspoDetailScreen() {
 
       {showMenu && (
         <Pressable style={styles.sheetOverlay} onPress={() => setShowMenu(false)}>
-          <View style={styles.sheet}>
+          <View style={[styles.sheet, { backgroundColor: surfaceColor }]}>
             <View style={styles.sheetHeader}>
-              <Text style={styles.sheetTitle}>Options</Text>
+              <Text style={[styles.sheetTitle, { color: textColor }]}>Options</Text>
               <TouchableOpacity onPress={() => setShowMenu(false)}>
-                <X size={20} color="#4b5563" />
+                <X size={20} color={secondaryTextColor} />
               </TouchableOpacity>
             </View>
             <TouchableOpacity style={styles.sheetItem} onPress={() => setShowMenu(false)}>
-              <Text style={styles.sheetItemText}>Share Board</Text>
+              <Text style={[styles.sheetItemText, { color: textColor }]}>Share Board</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.sheetItem} onPress={() => setShowMenu(false)}>
-              <Text style={styles.sheetItemText}>More Options</Text>
+              <Text style={[styles.sheetItemText, { color: textColor }]}>More Options</Text>
             </TouchableOpacity>
           </View>
         </Pressable>
@@ -129,16 +148,13 @@ export default function InspoDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   centered: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fff',
   },
   emptyText: {
-    color: '#6b7280',
     fontSize: 14,
   },
   header: {
@@ -148,7 +164,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
   },
   hero: {
     height: 180,
@@ -204,15 +219,10 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
-    backgroundColor: '#fff',
   },
   categoryChipActive: {
-    backgroundColor: '#000',
-    borderColor: '#000',
   },
   categoryChipText: {
-    color: '#374151',
     fontSize: 12,
   },
   categoryChipTextActive: {
@@ -230,7 +240,6 @@ const styles = StyleSheet.create({
     aspectRatio: 1,
     borderRadius: 16,
     overflow: 'hidden',
-    backgroundColor: '#e5e7eb',
   },
   gridImage: {
     width: '100%',
@@ -257,7 +266,6 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   emptyStateText: {
-    color: '#6b7280',
     fontSize: 14,
   },
   sheetOverlay: {
@@ -270,7 +278,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
   },
   sheet: {
-    backgroundColor: '#fff',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 20,
@@ -285,7 +292,6 @@ const styles = StyleSheet.create({
   sheetTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#111827',
   },
   sheetItem: {
     paddingVertical: 16,
@@ -293,6 +299,5 @@ const styles = StyleSheet.create({
   },
   sheetItemText: {
     fontSize: 15,
-    color: '#111827',
   },
 });

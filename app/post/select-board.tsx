@@ -4,6 +4,8 @@ import { ArrowLeft, ArrowUpDown, Check, ChevronRight, Plus } from 'lucide-react-
 import { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, Pressable } from 'react-native';
 
+import { useThemeColor } from '@/hooks/use-theme-color';
+
 type SortOrder = 'alphabetical' | 'date_added' | 'last_accessed';
 
 const SORT_OPTIONS: { id: SortOrder; label: string }[] = [
@@ -13,6 +15,12 @@ const SORT_OPTIONS: { id: SortOrder; label: string }[] = [
 ];
 
 export default function SelectBoardForPostScreen() {
+  const backgroundColor = useThemeColor({}, 'background');
+  const textColor = useThemeColor({}, 'text');
+  const secondaryTextColor = useThemeColor({}, 'secondaryText');
+  const borderColor = useThemeColor({}, 'border');
+  const surfaceColor = useThemeColor({}, 'surface');
+  const surfaceSubtleColor = useThemeColor({}, 'surfaceSubtle');
   const [sortOrder, setSortOrder] = useState<SortOrder>('last_accessed');
   const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
 
@@ -30,54 +38,54 @@ export default function SelectBoardForPostScreen() {
   }, [sortOrder, userCollections]);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <View style={[styles.container, { backgroundColor }]}>
+      <View style={[styles.header, { borderBottomColor: borderColor }]}>
         <View style={styles.headerLeft}>
           <TouchableOpacity onPress={() => router.back()}>
-            <ArrowLeft size={24} color="#000" />
+            <ArrowLeft size={24} color={textColor} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Select Board</Text>
+          <Text style={[styles.headerTitle, { color: textColor }]}>Select Board</Text>
         </View>
 
         <TouchableOpacity onPress={() => setIsSortMenuOpen((open) => !open)} style={styles.sortButton}>
-          <ArrowUpDown size={20} color="#000" />
+          <ArrowUpDown size={20} color={textColor} />
         </TouchableOpacity>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={styles.instructions}>Choose a board to add your new post to.</Text>
+        <Text style={[styles.instructions, { color: secondaryTextColor }]}>Choose a board to add your new post to.</Text>
 
-        <TouchableOpacity style={styles.createCard} onPress={() => router.push('/board/new')}>
+        <TouchableOpacity style={[styles.createCard, { borderColor, backgroundColor: surfaceSubtleColor }]} onPress={() => router.push('/board/new')}>
           <View style={styles.createCardLeft}>
-            <View style={styles.createIcon}>
-              <Plus size={20} color="#000" />
+            <View style={[styles.createIcon, { backgroundColor: surfaceColor }]}>
+              <Plus size={20} color={textColor} />
             </View>
-            <Text style={styles.createText}>Create New Board</Text>
+            <Text style={[styles.createText, { color: textColor }]}>Create New Board</Text>
           </View>
-          <ChevronRight size={20} color="#9ca3af" />
+          <ChevronRight size={20} color={secondaryTextColor} />
         </TouchableOpacity>
 
         {sortedCollections.map((collection) => (
           <TouchableOpacity
             key={collection.id}
-            style={styles.boardCard}
+            style={[styles.boardCard, { borderColor, backgroundColor: surfaceColor }]}
             onPress={() => router.push({ pathname: '/post/new', params: { boardId: collection.id } })}>
             <View style={styles.boardCardLeft}>
               <Image source={{ uri: collection.coverImage }} style={styles.boardImage} />
               <View>
-                <Text style={styles.boardTitle}>{collection.title}</Text>
-                <Text style={styles.boardMeta}>{collection.isPublic ? 'Public' : 'Private'}</Text>
+                <Text style={[styles.boardTitle, { color: textColor }]}>{collection.title}</Text>
+                <Text style={[styles.boardMeta, { color: secondaryTextColor }]}>{collection.isPublic ? 'Public' : 'Private'}</Text>
               </View>
             </View>
-            <ChevronRight size={20} color="#9ca3af" />
+            <ChevronRight size={20} color={secondaryTextColor} />
           </TouchableOpacity>
         ))}
       </ScrollView>
 
       {isSortMenuOpen && (
         <Pressable style={styles.menuOverlay} onPress={() => setIsSortMenuOpen(false)}>
-          <View style={styles.menuContainer}>
-            <Text style={styles.menuLabel}>Sort by</Text>
+          <View style={[styles.menuContainer, { backgroundColor: surfaceColor }]}>
+            <Text style={[styles.menuLabel, { color: secondaryTextColor }]}>Sort by</Text>
             {SORT_OPTIONS.map((option) => (
               <TouchableOpacity
                 key={option.id}
@@ -86,8 +94,8 @@ export default function SelectBoardForPostScreen() {
                   setSortOrder(option.id);
                   setIsSortMenuOpen(false);
                 }}>
-                <Text style={styles.menuItemText}>{option.label}</Text>
-                {sortOrder === option.id && <Check size={18} color="#000" />}
+                <Text style={[styles.menuItemText, { color: textColor }]}>{option.label}</Text>
+                {sortOrder === option.id && <Check size={18} color={textColor} />}
               </TouchableOpacity>
             ))}
           </View>
@@ -100,7 +108,6 @@ export default function SelectBoardForPostScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   header: {
     flexDirection: 'row',
@@ -109,7 +116,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
   },
   headerLeft: {
     flexDirection: 'row',
@@ -119,7 +125,6 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#000',
   },
   sortButton: {
     padding: 4,
@@ -131,7 +136,6 @@ const styles = StyleSheet.create({
   },
   instructions: {
     fontSize: 14,
-    color: '#6b7280',
     marginBottom: 16,
   },
   createCard: {
@@ -141,8 +145,6 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: '#d1d5db',
-    backgroundColor: '#f9fafb',
     marginBottom: 12,
   },
   createCardLeft: {
@@ -160,7 +162,6 @@ const styles = StyleSheet.create({
   },
   createText: {
     fontSize: 15,
-    color: '#111827',
     fontWeight: '500',
   },
   boardCard: {
@@ -170,8 +171,6 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: '#f3f4f6',
-    backgroundColor: '#fff',
     marginBottom: 12,
   },
   boardCardLeft: {
@@ -186,12 +185,10 @@ const styles = StyleSheet.create({
   },
   boardTitle: {
     fontSize: 15,
-    color: '#111827',
     fontWeight: '500',
   },
   boardMeta: {
     fontSize: 12,
-    color: '#6b7280',
     marginTop: 2,
   },
   menuOverlay: {
@@ -207,13 +204,11 @@ const styles = StyleSheet.create({
   },
   menuContainer: {
     width: 180,
-    backgroundColor: '#fff',
     borderRadius: 16,
     paddingVertical: 8,
   },
   menuLabel: {
     fontSize: 12,
-    color: '#6b7280',
     paddingHorizontal: 16,
     paddingVertical: 8,
   },
@@ -226,6 +221,5 @@ const styles = StyleSheet.create({
   },
   menuItemText: {
     fontSize: 15,
-    color: '#111827',
   },
 });

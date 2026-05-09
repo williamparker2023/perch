@@ -4,6 +4,8 @@ import { ArrowLeft, Heart, MessageCircle, Share2, Sparkles } from 'lucide-react-
 import { useMemo, useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
+import { useThemeColor } from '@/hooks/use-theme-color';
+
 const MOCK_COMMENTS = [
   { id: 'c1', user: users[1], text: 'This place is amazing! Added to my list.', time: '2h' },
   { id: 'c2', user: users[2], text: 'The food there is top notch.', time: '5h' },
@@ -11,6 +13,13 @@ const MOCK_COMMENTS = [
 
 export default function PostDetailScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
+  const backgroundColor = useThemeColor({}, 'background');
+  const textColor = useThemeColor({}, 'text');
+  const secondaryTextColor = useThemeColor({}, 'secondaryText');
+  const mutedTextColor = useThemeColor({}, 'mutedText');
+  const borderColor = useThemeColor({}, 'border');
+  const surfaceMutedColor = useThemeColor({}, 'surfaceMuted');
+  const iconColor = useThemeColor({}, 'text');
 
   const { initialPlace, isFromInspo } = useMemo(() => {
     const feedPlace = places.find((place) => place.id === id);
@@ -31,8 +40,8 @@ export default function PostDetailScreen() {
 
   if (!initialPlace) {
     return (
-      <View style={styles.centered}>
-        <Text style={styles.emptyText}>Post not found.</Text>
+      <View style={[styles.centered, { backgroundColor }]}>
+        <Text style={[styles.emptyText, { color: secondaryTextColor }]}>Post not found.</Text>
       </View>
     );
   }
@@ -40,10 +49,10 @@ export default function PostDetailScreen() {
   const feedStream = [initialPlace, ...postDetailStreamPlaces.filter((place) => place.id !== initialPlace.id)];
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <View style={styles.header}>
+    <ScrollView style={[styles.container, { backgroundColor }]} showsVerticalScrollIndicator={false}>
+      <View style={[styles.header, { borderBottomColor: borderColor }]}>
         <TouchableOpacity onPress={() => router.back()}>
-          <ArrowLeft size={22} color="#000" />
+          <ArrowLeft size={22} color={iconColor} />
         </TouchableOpacity>
       </View>
 
@@ -52,13 +61,37 @@ export default function PostDetailScreen() {
           key={`${place.id}-${index}`}
           place={place}
           isFromInspo={isFromInspo && index === 0}
+          textColor={textColor}
+          secondaryTextColor={secondaryTextColor}
+          mutedTextColor={mutedTextColor}
+          borderColor={borderColor}
+          surfaceMutedColor={surfaceMutedColor}
+          iconColor={iconColor}
         />
       ))}
     </ScrollView>
   );
 }
 
-function PostDetailItem({ place, isFromInspo }: { place: any; isFromInspo: boolean }) {
+function PostDetailItem({
+  place,
+  isFromInspo,
+  textColor,
+  secondaryTextColor,
+  mutedTextColor,
+  borderColor,
+  surfaceMutedColor,
+  iconColor,
+}: {
+  place: any;
+  isFromInspo: boolean;
+  textColor: string;
+  secondaryTextColor: string;
+  mutedTextColor: string;
+  borderColor: string;
+  surfaceMutedColor: string;
+  iconColor: string;
+}) {
   const user = users.find((entry) => entry.id === place.userId) ?? currentUser;
   const collection = isFromInspo
     ? inspoBoards.find((entry) => entry.id === place.inspoBoardId)
@@ -80,51 +113,51 @@ function PostDetailItem({ place, isFromInspo }: { place: any; isFromInspo: boole
           </TouchableOpacity>
           <View>
             <TouchableOpacity onPress={() => router.push(`/profile/${user.id}`)}>
-              <Text style={styles.userHandle}>{user.handle}</Text>
+              <Text style={[styles.userHandle, { color: textColor }]}>{user.handle}</Text>
             </TouchableOpacity>
             {!!collection && (
               <TouchableOpacity
                 onPress={() => router.push(isFromInspo ? `/inspo/${collection.id}` : `/collection/${collection.id}`)}>
-                <Text style={styles.collectionLink}>{collection.title}</Text>
+                <Text style={[styles.collectionLink, { color: secondaryTextColor }]}>{collection.title}</Text>
               </TouchableOpacity>
             )}
           </View>
         </View>
-        <View style={styles.categoryTag}>
-          <Text style={styles.categoryTagText}>{place.category}</Text>
+        <View style={[styles.categoryTag, { backgroundColor: surfaceMutedColor }]}>
+          <Text style={[styles.categoryTagText, { color: secondaryTextColor }]}>{place.category}</Text>
         </View>
       </View>
 
-      <Image source={{ uri: place.image }} style={styles.postImage} />
+      <Image source={{ uri: place.image }} style={[styles.postImage, { backgroundColor: surfaceMutedColor }]} />
 
       <View style={styles.postBody}>
         <View style={styles.actionsRow}>
           <View style={styles.leadingActions}>
             <TouchableOpacity onPress={() => setIsLiked((liked) => !liked)}>
-              <Heart size={24} color={isLiked ? '#ef4444' : '#000'} fill={isLiked ? '#ef4444' : 'none'} />
+              <Heart size={24} color={isLiked ? '#ef4444' : iconColor} fill={isLiked ? '#ef4444' : 'none'} />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => setShowComments((value) => !value)}>
-              <MessageCircle size={24} color="#000" />
+              <MessageCircle size={24} color={iconColor} />
             </TouchableOpacity>
             <TouchableOpacity>
-              <Share2 size={24} color="#000" />
+              <Share2 size={24} color={iconColor} />
             </TouchableOpacity>
           </View>
           {!isOwnPost && (
             <TouchableOpacity onPress={() => setIsSaved((saved) => !saved)}>
-              <Sparkles size={24} color="#000" fill={isSaved ? '#000' : 'none'} />
+              <Sparkles size={24} color={iconColor} fill={isSaved ? iconColor : 'none'} />
             </TouchableOpacity>
           )}
         </View>
 
-        <Text style={styles.placeName}>{place.name}</Text>
+        <Text style={[styles.placeName, { color: textColor }]}>{place.name}</Text>
 
         {!!place.notes && (
-          <Text style={styles.notes}>
+          <Text style={[styles.notes, { color: textColor }]}>
             <Text style={styles.notesHandle}>{user.handle} </Text>
             {isCaptionExpanded || place.notes.length <= 90 ? place.notes : `${place.notes.slice(0, 90)}... `}
             {!isCaptionExpanded && place.notes.length > 90 && (
-              <Text style={styles.expandText} onPress={() => setIsCaptionExpanded(true)}>
+              <Text style={[styles.expandText, { color: secondaryTextColor }]} onPress={() => setIsCaptionExpanded(true)}>
                 more
               </Text>
             )}
@@ -132,7 +165,9 @@ function PostDetailItem({ place, isFromInspo }: { place: any; isFromInspo: boole
         )}
 
         <TouchableOpacity onPress={() => setShowComments((value) => !value)}>
-          <Text style={styles.commentsToggle}>{showComments ? 'Hide comments' : 'View all 2 comments'}</Text>
+          <Text style={[styles.commentsToggle, { color: secondaryTextColor }]}>
+            {showComments ? 'Hide comments' : 'View all 2 comments'}
+          </Text>
         </TouchableOpacity>
 
         {showComments && (
@@ -141,19 +176,20 @@ function PostDetailItem({ place, isFromInspo }: { place: any; isFromInspo: boole
               <View key={mockComment.id} style={styles.commentRow}>
                 <Image source={{ uri: mockComment.user.avatar }} style={styles.commentAvatar} />
                 <View style={styles.commentBody}>
-                  <Text style={styles.commentText}>
-                    <Text style={styles.notesHandle}>{mockComment.user.handle} </Text>
-                    {mockComment.text}
-                  </Text>
-                  <Text style={styles.commentTime}>{mockComment.time}</Text>
+                  <Text style={[styles.commentText, { color: textColor }]}>
+                  <Text style={styles.notesHandle}>{mockComment.user.handle} </Text>
+                  {mockComment.text}
+                </Text>
+                  <Text style={[styles.commentTime, { color: secondaryTextColor }]}>{mockComment.time}</Text>
                 </View>
               </View>
             ))}
             <View style={styles.addCommentRow}>
               <Image source={{ uri: currentUser.avatar }} style={styles.commentAvatar} />
               <TextInput
-                style={styles.commentInput}
+                style={[styles.commentInput, { color: textColor, borderBottomColor: borderColor }]}
                 placeholder="Add a comment..."
+                placeholderTextColor={secondaryTextColor}
                 value={comment}
                 onChangeText={setComment}
               />
@@ -161,7 +197,7 @@ function PostDetailItem({ place, isFromInspo }: { place: any; isFromInspo: boole
           </View>
         )}
 
-        <Text style={styles.timestamp}>{place.timestamp}</Text>
+        <Text style={[styles.timestamp, { color: mutedTextColor }]}>{place.timestamp}</Text>
       </View>
     </View>
   );
@@ -170,23 +206,19 @@ function PostDetailItem({ place, isFromInspo }: { place: any; isFromInspo: boole
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   centered: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fff',
   },
   emptyText: {
-    color: '#6b7280',
     fontSize: 14,
   },
   header: {
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
   },
   post: {
     paddingTop: 12,
@@ -212,27 +244,22 @@ const styles = StyleSheet.create({
   userHandle: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#111827',
   },
   collectionLink: {
     fontSize: 11,
-    color: '#6b7280',
     marginTop: 2,
   },
   categoryTag: {
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 16,
-    backgroundColor: '#f3f4f6',
   },
   categoryTagText: {
     fontSize: 10,
-    color: '#4b5563',
   },
   postImage: {
     width: '100%',
     aspectRatio: 4 / 5,
-    backgroundColor: '#e5e7eb',
   },
   postBody: {
     paddingHorizontal: 16,
@@ -250,24 +277,20 @@ const styles = StyleSheet.create({
   },
   placeName: {
     fontSize: 16,
-    color: '#111827',
     fontWeight: '500',
     marginBottom: 6,
   },
   notes: {
     fontSize: 13,
-    color: '#111827',
     lineHeight: 18,
   },
   notesHandle: {
     fontWeight: '700',
   },
   expandText: {
-    color: '#6b7280',
   },
   commentsToggle: {
     fontSize: 13,
-    color: '#6b7280',
     marginTop: 12,
   },
   commentsSection: {
@@ -288,12 +311,10 @@ const styles = StyleSheet.create({
   },
   commentText: {
     fontSize: 13,
-    color: '#111827',
     lineHeight: 18,
   },
   commentTime: {
     fontSize: 11,
-    color: '#6b7280',
     marginTop: 4,
   },
   addCommentRow: {
@@ -305,14 +326,11 @@ const styles = StyleSheet.create({
   commentInput: {
     flex: 1,
     fontSize: 13,
-    color: '#111827',
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
     paddingVertical: 6,
   },
   timestamp: {
     fontSize: 12,
-    color: '#9ca3af',
     marginTop: 14,
   },
 });
