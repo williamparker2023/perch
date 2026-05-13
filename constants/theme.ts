@@ -32,7 +32,7 @@ export const Colors = {
     secondaryText: '#A7B0B8',
     mutedText: '#7F8892',
     inverseText: '#11181C',
-    background: '#151718',
+    background: 'rgb(18, 18, 18)',
     surface: '#1C1F20',
     surfaceMuted: '#262A2C',
     surfaceSubtle: '#202426',

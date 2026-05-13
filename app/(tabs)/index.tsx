@@ -1,10 +1,11 @@
-import { collections, places, users } from '@/constants/data';
+import { collections, currentUser, inspoBoards, places, users } from '@/constants/data';
 import { router } from 'expo-router';
 import { Heart, MessageCircle, Share2, Sparkles } from 'lucide-react-native';
 import { useRef, useState } from 'react';
 import { Animated, Image, NativeScrollEvent, NativeSyntheticEvent, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { InspoSaveModal } from '@/components/inspo-save-modal';
 import { useThemeColor } from '@/hooks/use-theme-color';
 
 export default function FeedScreen() {
@@ -80,9 +81,11 @@ function PostItem({ item }: { item: any }) {
   const iconColor = useThemeColor({}, 'text');
   const surfaceMutedColor = useThemeColor({}, 'surfaceMuted');
   const [isLiked, setIsLiked] = useState(false);
-  const [isSaved, setIsSaved] = useState(false);
+  const [selectedInspoBoardId, setSelectedInspoBoardId] = useState<string | null>(null);
+  const [isInspoModalOpen, setIsInspoModalOpen] = useState(false);
   const [showHeartAnim, setShowHeartAnim] = useState(false);
   const heartScale = useRef(new Animated.Value(0)).current;
+  const userInspoBoards = inspoBoards.filter((board) => board.userId === currentUser.id && !board.isDefault);
 
   const handleDoubleClick = () => {
     setIsLiked(true);
@@ -138,8 +141,12 @@ function PostItem({ item }: { item: any }) {
             <Share2 size={24} color={iconColor} />
           </TouchableOpacity>
           <View style={styles.flexEnd}>
-            <TouchableOpacity onPress={() => setIsSaved(!isSaved)}>
-              <Sparkles size={24} color={iconColor} fill={isSaved ? iconColor : 'none'} />
+            <TouchableOpacity onPress={() => setIsInspoModalOpen(true)}>
+              <Sparkles
+                size={24}
+                color={iconColor}
+                fill={selectedInspoBoardId ? iconColor : 'none'}
+              />
             </TouchableOpacity>
           </View>
         </View>
@@ -153,6 +160,21 @@ function PostItem({ item }: { item: any }) {
 
         <Text style={[styles.timestamp, { color: mutedTextColor }]}>{item.timestamp}</Text>
       </View>
+
+      <InspoSaveModal
+        visible={isInspoModalOpen}
+        boards={userInspoBoards}
+        selectedBoardId={selectedInspoBoardId}
+        onClose={() => setIsInspoModalOpen(false)}
+        onCreateNew={() => {
+          setIsInspoModalOpen(false);
+          router.push('/inspo/new');
+        }}
+        onSelectBoard={(boardId) => {
+          setSelectedInspoBoardId(boardId);
+          setIsInspoModalOpen(false);
+        }}
+      />
     </View>
   );
 }

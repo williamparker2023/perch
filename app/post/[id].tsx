@@ -4,6 +4,7 @@ import { ArrowLeft, Heart, MessageCircle, Share2, Sparkles } from 'lucide-react-
 import { useMemo, useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
+import { InspoSaveModal } from '@/components/inspo-save-modal';
 import { useThemeColor } from '@/hooks/use-theme-color';
 
 const MOCK_COMMENTS = [
@@ -99,10 +100,12 @@ function PostDetailItem({
   const isOwnPost = user.id === currentUser.id;
 
   const [isLiked, setIsLiked] = useState(false);
-  const [isSaved, setIsSaved] = useState(false);
+  const [selectedInspoBoardId, setSelectedInspoBoardId] = useState<string | null>(null);
+  const [isInspoModalOpen, setIsInspoModalOpen] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [isCaptionExpanded, setIsCaptionExpanded] = useState(false);
   const [comment, setComment] = useState('');
+  const userInspoBoards = inspoBoards.filter((board) => board.userId === currentUser.id && !board.isDefault);
 
   return (
     <View style={styles.post}>
@@ -144,8 +147,8 @@ function PostDetailItem({
             </TouchableOpacity>
           </View>
           {!isOwnPost && (
-            <TouchableOpacity onPress={() => setIsSaved((saved) => !saved)}>
-              <Sparkles size={24} color={iconColor} fill={isSaved ? iconColor : 'none'} />
+            <TouchableOpacity onPress={() => setIsInspoModalOpen(true)}>
+              <Sparkles size={24} color={iconColor} fill={selectedInspoBoardId ? iconColor : 'none'} />
             </TouchableOpacity>
           )}
         </View>
@@ -199,6 +202,21 @@ function PostDetailItem({
 
         <Text style={[styles.timestamp, { color: mutedTextColor }]}>{place.timestamp}</Text>
       </View>
+
+      <InspoSaveModal
+        visible={isInspoModalOpen}
+        boards={userInspoBoards}
+        selectedBoardId={selectedInspoBoardId}
+        onClose={() => setIsInspoModalOpen(false)}
+        onCreateNew={() => {
+          setIsInspoModalOpen(false);
+          router.push('/inspo/new');
+        }}
+        onSelectBoard={(boardId) => {
+          setSelectedInspoBoardId(boardId);
+          setIsInspoModalOpen(false);
+        }}
+      />
     </View>
   );
 }

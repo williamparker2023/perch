@@ -15,7 +15,6 @@ const TOP_HEADER_HEIGHT = 52;
 
 export function ProfileScreen({ userId }: ProfileScreenProps) {
   const insets = useSafeAreaInsets();
-  const backgroundColor = useThemeColor({}, 'background');
   const navChromeColor = useThemeColor({}, 'navChrome');
   const textColor = useThemeColor({}, 'text');
   const secondaryTextColor = useThemeColor({}, 'secondaryText');
@@ -48,9 +47,9 @@ export function ProfileScreen({ userId }: ProfileScreenProps) {
   });
 
   return (
-    <View style={styles.screen}>
+    <View style={[styles.screen, { backgroundColor: navChromeColor }]}>
       <ScrollView
-        style={styles.container}
+        style={[styles.container, { backgroundColor: navChromeColor }]}
         showsVerticalScrollIndicator={false}
         stickyHeaderIndices={[0]}>
         <View style={[styles.headerShell, { paddingTop: insets.top, backgroundColor: navChromeColor }]}>

@@ -12,7 +12,6 @@ const EXPLORE_FILTERS_HEIGHT = 49;
 
 export default function ExploreScreen() {
   const insets = useSafeAreaInsets();
-  const backgroundColor = useThemeColor({}, 'background');
   const navChromeColor = useThemeColor({}, 'navChrome');
   const textColor = useThemeColor({}, 'text');
   const secondaryTextColor = useThemeColor({}, 'secondaryText');
@@ -82,7 +81,7 @@ export default function ExploreScreen() {
   };
 
   return (
-    <View style={styles.screen}>
+    <View style={[styles.screen, { backgroundColor: navChromeColor }]}>
       <Animated.View style={[styles.headerShell, { height: headerHeight, paddingTop: insets.top, backgroundColor: navChromeColor }]}>
         <Animated.View style={[styles.headerContent, { transform: [{ translateY: headerTranslateY }], backgroundColor: navChromeColor }]}>
           <View style={[styles.searchContainer, { borderBottomColor: borderColor }]}>
@@ -125,7 +124,7 @@ export default function ExploreScreen() {
       </Animated.View>
 
       <Animated.ScrollView
-        style={styles.container}
+        style={[styles.container, { backgroundColor: navChromeColor }]}
         showsVerticalScrollIndicator={false}
         scrollEventThrottle={16}
         onScroll={handleScroll}>
